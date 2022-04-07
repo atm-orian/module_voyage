@@ -111,18 +111,10 @@ if (empty($reshook))
 			$voyage->reference 				= GETPOST('ref');
 			$voyage->tarif 					= GETPOST('tarif');
 			$voyage->pays 					= GETPOST('pays');
-			$voyage->date_deb				= date_format(GETPOST('date_deb', 'Y-m-d'));
-			$voyage->date_fin 				= date_format(GETPOST('date_fin', 'Y-m-d'));
+			$voyage->date_deb				= date_format(GETPOST('date_deb'), 'Y-m-d');
+			$voyage->date_fin 				= date_format(GETPOST('date_fin'), 'Y-m-d');
 
 			$res = $voyage->save($user);
-
-
-//				$object->label 				= GETPOST('label');
-//				$object->price			 	= GETPOST('tarif');
-//				$object->country			= GETPOST('pays'); //name
-//				$object->startDateAndHour	= GETPOST('depart');
-//				$object->endDateAndHour 	= GETPOST('arrivee');
-
 
 			break;
 		case 'update':
