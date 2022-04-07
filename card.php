@@ -14,8 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+// Load Dolibarr environment
+$res=0;
+// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
+if (! $res && ! empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) $res=@include($_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php");
+// Try main.inc.php into web root detected using web root caluclated from SCRIPT_FILENAME
+$tmp=empty($_SERVER['SCRIPT_FILENAME'])?'':$_SERVER['SCRIPT_FILENAME'];$tmp2=realpath(__FILE__); $i=strlen($tmp)-1; $j=strlen($tmp2)-1;
+while($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i]==$tmp2[$j]) { $i--; $j--; }
+if (! $res && $i > 0 && file_exists(substr($tmp, 0, ($i+1))."/main.inc.php")) $res=@include(substr($tmp, 0, ($i+1))."/main.inc.php");
+if (! $res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i+1)))."/main.inc.php")) $res=@include(dirname(substr($tmp, 0, ($i+1)))."/main.inc.php");
+// Try main.inc.php using relative path
+if (! $res && file_exists("../main.inc.php")) $res=@include("../main.inc.php");
+if (! $res && file_exists("../../main.inc.php")) $res=@include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res=@include("../../../main.inc.php");
+if (! $res) die("Include of main fails");
 
-require 'config.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 dol_include_once('voyage/class/voyage.class.php');
@@ -80,12 +93,38 @@ if (empty($reshook))
     // For object linked
     include DOL_DOCUMENT_ROOT.'/core/actions_dellink.inc.php';		// Must be include, not include_once
 
-
-
-
     $error = 0;
+
+
 	switch ($action) {
 		case 'add':
+			//var_dump($_POST);exit;
+
+			if (empty($ref)) {
+				setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentities('Ref')), null, 'errors');
+				$action = "create";
+				$error++;
+			}
+
+			$voyage = new Voyage($db);
+
+			$voyage->reference 				= GETPOST('ref');
+			$voyage->tarif 					= GETPOST('tarif');
+			$voyage->pays 					= GETPOST('pays');
+			$voyage->date_deb				= date_format(GETPOST('date_deb', 'Y-m-d'));
+			$voyage->date_fin 				= date_format(GETPOST('date_fin', 'Y-m-d'));
+
+			$res = $voyage->save($user);
+
+
+//				$object->label 				= GETPOST('label');
+//				$object->price			 	= GETPOST('tarif');
+//				$object->country			= GETPOST('pays'); //name
+//				$object->startDateAndHour	= GETPOST('depart');
+//				$object->endDateAndHour 	= GETPOST('arrivee');
+
+
+			break;
 		case 'update':
 			$object->setValues($_REQUEST); // Set standard attributes
 
@@ -192,6 +231,8 @@ llxHeader('', $title);
 
 if ($action == 'create')
 {
+
+//	var_dump($_POST);exit;
     print load_fiche_titre($langs->trans('Newvoyage'), '', 'voyage@voyage');
 
     print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
@@ -204,10 +245,29 @@ if ($action == 'create')
     print '<table class="border centpercent">'."\n";
 
     // Common attributes
-    include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
 
-    // Other attributes
-    include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_add.tpl.php';
+	print '<tr><td class="fieldrequired">'.$langs->trans("Ref").'</td><td><input name="ref" class="minwidth300 maxwidth400onsmartphone" maxlength="255" value="'.dol_escape_htmltag(GETPOST('label', $label_security_check)).'"></td></tr>';
+
+	print '<tr><td >'.$langs->trans("price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('price', $label_security_check)).'"></td> </tr>';
+
+	print '<tr><td >'.$langs->trans("country").'</td> <td> <input name="pays" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('country', $label_security_check)).'"></td> </tr>';
+
+
+
+	// Date et heure départ
+	print '<tr><td class="">'.$langs->trans('startDate').'</td><td>';
+	print $form->selectDate('','date_deb','','');
+	print '</td></tr>';
+
+	// Date et heure arrivée
+	print '<tr><td class="">'.$langs->trans('endDate').'</td><td>';
+	print $form->selectDate('','date_fin','','');
+	print '</td></tr>';
+
+
+
+	// Other attributes
+
 
     print '</table>'."\n";
 

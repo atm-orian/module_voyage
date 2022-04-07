@@ -132,22 +132,27 @@ $listViewConfig = array(
 		'date_creation' => 'date' // [datetime], [hour], [money], [number], [integer]
 		,'tms' => 'date'
 	)
+	//paramètres
 	,'search' => array(
-		'date_creation' => array('search_type' => 'calendars', 'allow_is_null' => true)
+		'startDateAndHour' => array('search_type' => 'calendars', 'allow_is_null' => true)
+		,'endDateAndHour' => array('search_type' => 'calendars', 'allow_is_null' => true)
+		,'price' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
 		,'tms' => array('search_type' => 'calendars', 'allow_is_null' => false)
 		,'ref' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
 		,'label' => array('search_type' => true, 'table' => array('t', 't'), 'field' => array('label')) // input text de recherche sur plusieurs champs
 		,'status' => array('search_type' => voyage::$TStatus, 'to_translate' => true) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
+		,''
 	)
 	,'translate' => array()
 	,'hide' => array(
 		'rowid' // important : rowid doit exister dans la query sql pour les checkbox de massaction
 	)
+	//affichage
 	,'title'=>array(
-		'ref' => $langs->trans('Ref.')
-		,'label' => $langs->trans('Label')
-		,'date_creation' => $langs->trans('DateCre')
-		,'tms' => $langs->trans('DateMaj')
+		'label' => $langs->trans('label')
+		,'startDateAndHour' => $langs->trans('startDateAndHour')
+		, 'price' => $langs->trans('tarif')
+		//,'tarif' => $langs->trans('Tarif')
 	)
 	,'eval'=>array(
 		'ref' => '_getObjectNomUrl(\'@rowid@\', \'@val@\')'
