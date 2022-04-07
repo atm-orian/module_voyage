@@ -98,7 +98,7 @@ if (empty($reshook))
 
 	switch ($action) {
 		case 'add':
-			//var_dump($_POST);exit;
+//			var_dump($_POST);exit;
 
 			if (empty($ref)) {
 				setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentities('Ref')), null, 'errors');
@@ -111,8 +111,14 @@ if (empty($reshook))
 			$voyage->reference 				= GETPOST('ref');
 			$voyage->tarif 					= GETPOST('tarif');
 			$voyage->pays 					= GETPOST('pays');
-			$voyage->date_deb				= date_format(GETPOST('date_deb'), 'Y-m-d');
-			$voyage->date_fin 				= date_format(GETPOST('date_fin'), 'Y-m-d');
+
+			$date_d = GETPOST('date_deb');
+			$date_dConvert= date("y-m-d", strtotime($date_d));
+			$voyage->date_deb				= $date_dConvert;
+
+			$date_f = GETPOST('date_fin');
+			$date_fConvert= date("y-m-d", strtotime($date_f));
+			$voyage->date_fin				= $date_fConvert;
 
 			$res = $voyage->save($user);
 

@@ -54,9 +54,13 @@ if (!GETPOST('confirmmassaction', 'alpha') && $massaction != 'presend' && $massa
 
 if (empty($reshook))
 {
-	// do action from GETPOST ...
+	$search_ref= '';
+	$search_tarif= '';
+	$search_pays= '';
+	$search_date_deb='';
+	$search_date_fin='';
 }
-
+	$sql = "Select * From llx_voyage";
 
 /*
  * View
@@ -134,14 +138,11 @@ $listViewConfig = array(
 	)
 	//paramètres
 	,'search' => array(
-		'startDateAndHour' => array('search_type' => 'calendars', 'allow_is_null' => true)
-		,'endDateAndHour' => array('search_type' => 'calendars', 'allow_is_null' => true)
-		,'price' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
-		,'tms' => array('search_type' => 'calendars', 'allow_is_null' => false)
+		'date_deb' => array('search_type' => 'calendars', 'allow_is_null' => true)
+		,'date_fin' => array('search_type' => 'calendars', 'allow_is_null' => true)
+		,'tarif' => array('search_type' => true, 'table' => 't', 'field' => 'tarif')
+	    ,'tms' => array('search_type' => 'calendars', 'allow_is_null' => false)
 		,'ref' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
-		,'label' => array('search_type' => true, 'table' => array('t', 't'), 'field' => array('label')) // input text de recherche sur plusieurs champs
-		,'status' => array('search_type' => voyage::$TStatus, 'to_translate' => true) // select html, la clé = le status de l'objet, 'to_translate' à true si nécessaire
-		,''
 	)
 	,'translate' => array()
 	,'hide' => array(
@@ -149,11 +150,9 @@ $listViewConfig = array(
 	)
 	//affichage
 	,'title'=>array(
-		'label' => $langs->trans('label')
-		,'startDateAndHour' => $langs->trans('startDateAndHour')
-		, 'price' => $langs->trans('tarif')
-		//,'tarif' => $langs->trans('Tarif')
+		'label' => $langs->trans('reference'),
 	)
+
 	,'eval'=>array(
 		'ref' => '_getObjectNomUrl(\'@rowid@\', \'@val@\')'
 //		,'fk_user' => '_getUserNomUrl(@val@)' // Si on a un fk_user dans notre requête

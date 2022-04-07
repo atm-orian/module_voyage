@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS llx_voyage
     pays varchar(100),
     fk_soc int,
     description text,
-    date_deb date,
-    date_fin date,
+    date_deb timestamp,
+    date_fin timestamp,
     date_creation date,
     tms date,
     entity int
