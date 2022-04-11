@@ -53,10 +53,10 @@ voyageCancel=Abandonner
 voyageDelete=Supprimer
 
 label=libellé
-price=tarif
-country=pays
-startDate=date de départ
-endDate=date d'arrivée
+price=Tarif
+country=Pays
+startDate=Date de départ
+endDate=Date d'arrivée
 
 ConfirmValidatevoyageTitle=Confirmation d'activation
 ConfirmValidatevoyageBody=Souhaitez-vous vraiment activer cette fiche voyage %s ?

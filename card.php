@@ -122,6 +122,8 @@ if (empty($reshook))
 
 			$res = $voyage->save($user);
 
+			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
+
 			break;
 		case 'update':
 			$object->setValues($_REQUEST); // Set standard attributes
@@ -204,7 +206,11 @@ if (empty($reshook))
 			exit;
 
 		case 'confirm_delete':
-			if (!empty($user->rights->voyage->delete)) $object->delete($user);
+//			var_dump($object); exit;
+			if (!empty($user->rights->voyage->delete)) {
+				$res = $object->delete($user);
+				if($res <= 0) setEventMessages($object->error, $object->errors, 'errors');
+			}
 
 			header('Location: '.dol_buildpath('/voyage/list.php', 1));
 			exit;
@@ -252,17 +258,15 @@ if ($action == 'create')
 
 
 
-	// Date et heure départ
+	// Date de départ
 	print '<tr><td class="">'.$langs->trans('startDate').'</td><td>';
 	print $form->selectDate('','date_deb','','');
 	print '</td></tr>';
 
-	// Date et heure arrivée
+	// Date d'arrivée
 	print '<tr><td class="">'.$langs->trans('endDate').'</td><td>';
 	print $form->selectDate('','date_fin','','');
 	print '</td></tr>';
-
-
 
 	// Other attributes
 
@@ -375,53 +379,53 @@ else
                 //        print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle">' . $langs->trans('SendMail') . '</a>'."\n";
 
                 // Modify
-                if (!empty($user->rights->voyage->write))
-                {
-                    if ($object->status !== voyage::STATUS_CANCELED)
-                    {
-                        // Modify
-                        if ($object->status !== voyage::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=edit">'.$langs->trans("voyageModify").'</a></div>'."\n";
-                        // Clone
-                        print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
-                    }
-
-                    // Valid
-                    if ($object->status === voyage::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('voyageValid').'</a></div>'."\n";
-
-                    // Accept
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=accept">'.$langs->trans('voyageAccept').'</a></div>'."\n";
-                    // Refuse
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=refuse">'.$langs->trans('voyageRefuse').'</a></div>'."\n";
-
-
-                    // Reopen
-                    if ($object->status === voyage::STATUS_ACCEPTED || $object->status === voyage::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('voyageReopen').'</a></div>'."\n";
-                    // Cancel
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=cancel">'.$langs->trans("voyageCancel").'</a></div>'."\n";
-                }
-                else
-                {
-                    if ($object->status !== voyage::STATUS_CANCELED)
-                    {
-                        // Modify
-                        if ($object->status !== voyage::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageModify").'</a></div>'."\n";
-                        // Clone
-                        print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageClone").'</a></div>'."\n";
-                    }
-
-                    // Valid
-                    if ($object->status === voyage::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('voyageValid').'</a></div>'."\n";
-
-                    // Accept
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('voyageAccept').'</a></div>'."\n";
-                    // Refuse
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('voyageRefuse').'</a></div>'."\n";
-
-                    // Reopen
-                    if ($object->status === voyage::STATUS_ACCEPTED || $object->status === voyage::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('voyageReopen').'</a></div>'."\n";
-                    // Cancel
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageCancel").'</a></div>'."\n";
-                }
+//                if (!empty($user->rights->voyage->write))
+//                {
+//                    if ($object->status !== voyage::STATUS_CANCELED)
+//                    {
+//                        // Modify
+//                        if ($object->status !== voyage::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=edit">'.$langs->trans("voyageModify").'</a></div>'."\n";
+//                        // Clone
+//                        print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
+//                    }
+//
+//                    // Valid
+//                    if ($object->status === voyage::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('voyageValid').'</a></div>'."\n";
+//
+//                    // Accept
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=accept">'.$langs->trans('voyageAccept').'</a></div>'."\n";
+//                    // Refuse
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=refuse">'.$langs->trans('voyageRefuse').'</a></div>'."\n";
+//
+//
+//                    // Reopen
+//                    if ($object->status === voyage::STATUS_ACCEPTED || $object->status === voyage::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('voyageReopen').'</a></div>'."\n";
+//                    // Cancel
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=cancel">'.$langs->trans("voyageCancel").'</a></div>'."\n";
+//                }
+//                else
+//                {
+//                    if ($object->status !== voyage::STATUS_CANCELED)
+//                    {
+//                        // Modify
+//                        if ($object->status !== voyage::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageModify").'</a></div>'."\n";
+//                        // Clone
+//                        print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageClone").'</a></div>'."\n";
+//                    }
+//
+//                    // Valid
+//                    if ($object->status === voyage::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('voyageValid').'</a></div>'."\n";
+//
+//                    // Accept
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('voyageAccept').'</a></div>'."\n";
+//                    // Refuse
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('voyageRefuse').'</a></div>'."\n";
+//
+//                    // Reopen
+//                    if ($object->status === voyage::STATUS_ACCEPTED || $object->status === voyage::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('voyageReopen').'</a></div>'."\n";
+//                    // Cancel
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageCancel").'</a></div>'."\n";
+//                }
 
                 if (!empty($user->rights->voyage->delete))
                 {
@@ -431,6 +435,9 @@ else
                 {
                     print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageDelete").'</a></div>'."\n";
                 }
+				if ($user->rights->societe->creer) {
+					print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit">'.$langs->trans("Modify").'</a>'."\n";
+				}
             }
             print '</div>'."\n";
 

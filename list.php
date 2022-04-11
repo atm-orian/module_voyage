@@ -16,6 +16,7 @@
  */
 
 require 'config.php';
+
 dol_include_once('voyage/class/voyage.class.php');
 
 if(empty($user->rights->voyage->read)) accessforbidden();
@@ -51,17 +52,6 @@ if (!GETPOST('confirmmassaction', 'alpha') && $massaction != 'presend' && $massa
     $massaction = '';
 }
 
-
-if (empty($reshook))
-{
-	$search_ref= '';
-	$search_tarif= '';
-	$search_pays= '';
-	$search_date_deb='';
-	$search_date_fin='';
-}
-	$sql = "Select * From llx_voyage";
-
 /*
  * View
  */
@@ -91,6 +81,8 @@ $sql.=$hookmanager->resPrint;
 
 $sql.= ' FROM '.MAIN_DB_PREFIX.'voyage t ';
 
+
+
 if (!empty($object->isextrafieldmanaged))
 {
     $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'voyage_extrafields et ON (et.fk_object = t.rowid)';
@@ -111,66 +103,78 @@ $nbLine = GETPOST('limit');
 if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user->conf->MAIN_SIZE_LISTE_LIMIT : $conf->global->MAIN_SIZE_LISTE_LIMIT;
 
 // List configuration
-$listViewConfig = array(
-	'view_type' => 'list' // default = [list], [raw], [chart]
-	,'allow-fields-select' => true
-	,'limit'=>array(
-		'nbLine' => $nbLine
-	)
-	,'list' => array(
-		'title' => $langs->trans('voyageList')
-		,'image' => 'title_generic.png'
-		,'picto_precedent' => '<'
-		,'picto_suivant' => '>'
-		,'noheader' => 0
-		,'messageNothing' => $langs->trans('Novoyage')
-		,'picto_search' => img_picto('', 'search.png', '', 0)
-		,'massactions'=>array(
-			'yourmassactioncode'  => $langs->trans('YourMassActionLabel')
-		)
-		,'selected' => $toselect
-	)
-	,'subQuery' => array()
-	,'link' => array()
-	,'type' => array(
-		'date_creation' => 'date' // [datetime], [hour], [money], [number], [integer]
-		,'tms' => 'date'
-	)
-	//paramètres
-	,'search' => array(
-		'date_deb' => array('search_type' => 'calendars', 'allow_is_null' => true)
-		,'date_fin' => array('search_type' => 'calendars', 'allow_is_null' => true)
-		,'tarif' => array('search_type' => true, 'table' => 't', 'field' => 'tarif')
-	    ,'tms' => array('search_type' => 'calendars', 'allow_is_null' => false)
-		,'ref' => array('search_type' => true, 'table' => 't', 'field' => 'ref')
-	)
-	,'translate' => array()
-	,'hide' => array(
-		'rowid' // important : rowid doit exister dans la query sql pour les checkbox de massaction
-	)
-	//affichage
-	,'title'=>array(
-		'label' => $langs->trans('reference'),
-	)
 
-	,'eval'=>array(
-		'ref' => '_getObjectNomUrl(\'@rowid@\', \'@val@\')'
-//		,'fk_user' => '_getUserNomUrl(@val@)' // Si on a un fk_user dans notre requête
-	)
-);
+print '<table class = "liste" width = "100%">' . "\n";
+//TITLE
+print '<tr class = "liste_titre">';
+print_liste_field_titre($langs->trans('Ref'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+print_liste_field_titre($langs->trans('price'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+print_liste_field_titre($langs->trans('country'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+print_liste_field_titre($langs->trans('startDate'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+print_liste_field_titre($langs->trans('endDate'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+print '</tr>';
 
-$r = new Listview($db, 'voyage');
+//
+//$mysqli = new mysqli("localhost", "client", "client", "dolibarr");
+//$mysqli->set_charset("utf8");
+//
+//$requete = "SELECT * FROM llx_voyage";
+//
+//$resultat = $mysqli->query($requete);
+//
+//while ($ligne = $resultat->fetch_assoc()) {
+//	echo $ligne['rowid'] . ' ' . $ligne['reference'] . ' ' . $ligne['tarif'] . ' ' . $ligne['pays'] .' ' . $ligne['date_deb'] .' ' . $ligne['date_fin'] .'<br>';
+//}
+//$mysqli->close();
 
-// Change view from hooks
-$parameters=array(  'listViewConfig' => $listViewConfig);
-$reshook=$hookmanager->executeHooks('listViewConfig',$parameters,$r);    // Note that $action and $object may have been modified by hook
-if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-if ($reshook>0)
-{
-	$listViewConfig = $hookmanager->resArray;
+$sql = 'SELECT * FROM ' . MAIN_DB_PREFIX.'voyage';
+$i = 0;
+
+$resql = $db->query($sql);
+$num = $db->num_rows($sql);
+
+//print '<table>';
+
+while($i<$num){
+
+	$obj = $db->fetch_object($resql);
+
+	print '<tr>';
+
+	print '<td>'. $obj->reference .'</td>';
+	print "\n";
+
+	print '<td>'. $obj->tarif .'</td>';
+	print "\n";
+
+	print '<td>'. $obj->pays .'</td>';
+	print "\n";
+
+	print '<td>'. $obj->date_deb .'</td>';
+	print "\n";
+
+	print '<td>'. $obj->date_fin .'</td>';
+	print "\n";
+
+	print '</tr>';
+	$i++;
 }
 
-echo $r->render($sql, $listViewConfig);
+//print '</table>';
+
+
+
+
+
+
+
+
+
 
 $parameters=array('sql'=>$sql);
 $reshook=$hookmanager->executeHooks('printFieldListFooter', $parameters, $object);    // Note that $action and $object may have been modified by hook

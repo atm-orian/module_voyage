@@ -38,7 +38,7 @@ class Voyage extends SeedObject
 	public $element = 'voyage';
 
 	/** @var int $isextrafieldmanaged Enable the fictionalises of extrafields */
-    public $isextrafieldmanaged = 1;
+    public $isextrafieldmanaged = 0;
 
     /** @var int $ismultientitymanaged 0=No test on entity, 1=Test with field entity, 2=Test with link by societe */
     public $ismultientitymanaged = 1;
@@ -136,7 +136,7 @@ class Voyage extends SeedObject
 
 		'date_fin' => array(
 			'type' => 'date',
-			'label' => 'date_deb',
+			'label' => 'date_fin',
 			'enabled' => 1,
 			'visible' => 1,
 			'notnull' => 0,
@@ -154,23 +154,23 @@ class Voyage extends SeedObject
 			'position' => 20
 		),
 
-		'fk_soc' => array(
-			'type' => 'integer:Societe:societe/class/societe.class.php',
-			'label' => 'ThirdParty',
-			'visible' => 1,
-			'enabled' => 1,
-			'position' => 50,
-			'index' => 1,
-			'help' => 'LinkToThirparty'
-		),
+//		'fk_soc' => array(
+//			'type' => 'integer:Societe:societe/class/societe.class.php',
+//			'label' => 'ThirdParty',
+//			'visible' => 1,
+//			'enabled' => 1,
+//			'position' => 50,
+//			'index' => 1,
+//			'help' => 'LinkToThirparty'
+//		),
 
-		'description' => array(
-			'type' => 'text', // or html for WYSWYG
-			'label' => 'Description',
-			'enabled' => 1,
-			'visible' => -1, //  un bug sur la version 9.0 de Dolibarr necessite de mettre -1 pour ne pas apparaitre sur les listes au lieu de la valeur 3
-			'position' => 60
-		),
+//		'description' => array(
+//			'type' => 'text', // or html for WYSWYG
+//			'label' => 'Description',
+//			'enabled' => 1,
+//			'visible' => -1, //  un bug sur la version 9.0 de Dolibarr necessite de mettre -1 pour ne pas apparaitre sur les listes au lieu de la valeur 3
+//			'position' => 60
+//		),
 
 //		'date_creation' => array(
 //			'type'=>'datetime',
@@ -232,12 +232,12 @@ class Voyage extends SeedObject
      * @param User $user User object
      * @return int
      */
-    public function delete(User &$user)
+    public function delete(User &$user, $notrigger = false)
     {
         $this->deleteObjectLinked();
 
         unset($this->fk_element); // avoid conflict with standard Dolibarr comportment
-        return parent::delete($user);
+        parent::delete($user, $notrigger);
     }
 
     /**
@@ -323,7 +323,8 @@ class Voyage extends SeedObject
      */
     public function getLibStatut($mode = 0)
     {
-        return self::LibStatut($this->status, $mode);
+//        return self::LibStatut($this->status, $mode);
+		return 'toto';
     }
 }
 
