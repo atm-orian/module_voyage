@@ -113,12 +113,13 @@ if (empty($reshook))
 			$voyage->pays 					= GETPOST('pays');
 
 			$date_d = GETPOST('date_deb');
-			$date_dConvert= date("y-m-d", strtotime($date_d));
-			$voyage->date_deb				= $date_dConvert;
+            $date_dConvert = DateTime::createFromFormat('d/m/Y', $date_d);
+			$voyage->date_deb				= $date_dConvert->format('Y-m-d');
+
 
 			$date_f = GETPOST('date_fin');
-			$date_fConvert= date("y-m-d", strtotime($date_f));
-			$voyage->date_fin				= $date_fConvert;
+			$date_fConvert= DateTime::createFromFormat('d/m/Y',$date_f);
+			$voyage->date_fin				= $date_fConvert->format('Y-m-d');
 
 			$res = $voyage->save($user);
 
@@ -228,6 +229,7 @@ if (empty($reshook))
 /**
  * View
  */
+
 $form = new Form($db);
 
 $title=$langs->trans('voyage');

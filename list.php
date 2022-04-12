@@ -24,6 +24,12 @@ if(empty($user->rights->voyage->read)) accessforbidden();
 $langs->load('abricot@abricot');
 $langs->load('voyage@voyage');
 
+$search_id 		        = GETPOST('search_id');
+$search_ref			    = GETPOST('search_ref');
+$search_tarif			= GETPOST('search_tarif');
+$search_pays			= GETPOST('search_pays');
+$search_date_deb		= GETPOST('search_date_deb');
+$search_date_fin		= GETPOST('search_date_fin');
 
 $massaction = GETPOST('massaction', 'alpha');
 $confirmmassaction = GETPOST('confirmmassaction', 'alpha');
@@ -82,16 +88,6 @@ $sql.=$hookmanager->resPrint;
 $sql.= ' FROM '.MAIN_DB_PREFIX.'voyage t ';
 
 
-
-if (!empty($object->isextrafieldmanaged))
-{
-    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'voyage_extrafields et ON (et.fk_object = t.rowid)';
-}
-
-$sql.= ' WHERE 1=1';
-//$sql.= ' AND t.entity IN ('.getEntity('voyage', 1).')';
-//if ($type == 'mine') $sql.= ' AND t.fk_user = '.$user->id;
-
 // Add where from hooks
 $parameters=array('sql' => $sql);
 $reshook=$hookmanager->executeHooks('printFieldListWhere', $parameters, $object);    // Note that $action and $object may have been modified by hook
@@ -103,71 +99,110 @@ $nbLine = GETPOST('limit');
 if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user->conf->MAIN_SIZE_LISTE_LIMIT : $conf->global->MAIN_SIZE_LISTE_LIMIT;
 
 // List configuration
+$picto = 'voyage@voyage';
+
+//entête
+
+print_barre_liste("Voyage", $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, $picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
 
 print '<table class = "liste" width = "100%">' . "\n";
 //TITLE
-print '<tr class = "liste_titre">';
-print_liste_field_titre($langs->trans('Ref'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
-print "\n";
-print_liste_field_titre($langs->trans('price'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
-print "\n";
-print_liste_field_titre($langs->trans('country'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
-print "\n";
-print_liste_field_titre($langs->trans('startDate'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
-print "\n";
-print_liste_field_titre($langs->trans('endDate'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
-print "\n";
+
+
+print '<tr class = "liste_titre_filter">';
+print '<td><input class="flat" type="text" name="search_id" size="8" value="'.$search_id.'"></td>';
+print '<td><input class="flat" type="text" name="search_ref" size="8" value="'.$search_ref.'"></td>';
+print '<td><input class="flat" type="text" name="search_tarif" size="8" value="'.$search_tarif.'"></td>';
+print '<td><input class="flat" type="text" name="search_pays" size="8" value="'.$search_pays.'"></td>';
+print '<td><input class="flat" type="text" name="search_date_deb" size="8" value="'.$search_date_deb.'"></td>';
+print '<td><input class="flat" type="text" name="search_date_fin" size="8" value="'.$search_date_fin.'"></td>';
+print '<td><button type="submit" class="liste_titre button_search reposition" name="button_search_x" value="x"><span class="fa fa-search"></span></button></td>';
 print '</tr>';
 
-//
-//$mysqli = new mysqli("localhost", "client", "client", "dolibarr");
-//$mysqli->set_charset("utf8");
-//
-//$requete = "SELECT * FROM llx_voyage";
-//
-//$resultat = $mysqli->query($requete);
-//
-//while ($ligne = $resultat->fetch_assoc()) {
-//	echo $ligne['rowid'] . ' ' . $ligne['reference'] . ' ' . $ligne['tarif'] . ' ' . $ligne['pays'] .' ' . $ligne['date_deb'] .' ' . $ligne['date_fin'] .'<br>';
-//}
-//$mysqli->close();
+print '<tr class = "liste_titre">';
+
+
+print_liste_field_titre($langs->trans('Id'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+
+print_liste_field_titre($langs->trans('Ref'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+
+print_liste_field_titre($langs->trans('price'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+
+print_liste_field_titre($langs->trans('country'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+
+print_liste_field_titre($langs->trans('startDate'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+
+print_liste_field_titre($langs->trans('endDate'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+
+print '</tr>';
+
+
 
 $sql = 'SELECT * FROM ' . MAIN_DB_PREFIX.'voyage';
-$i = 0;
 
-$resql = $db->query($sql);
-$num = $db->num_rows($sql);
+$sql .= ' WHERE 1=1';
 
-//print '<table>';
-
-while($i<$num){
-
-	$obj = $db->fetch_object($resql);
-
-	print '<tr>';
-
-	print '<td>'. $obj->reference .'</td>';
-	print "\n";
-
-	print '<td>'. $obj->tarif .'</td>';
-	print "\n";
-
-	print '<td>'. $obj->pays .'</td>';
-	print "\n";
-
-	print '<td>'. $obj->date_deb .'</td>';
-	print "\n";
-
-	print '<td>'. $obj->date_fin .'</td>';
-	print "\n";
-
-	print '</tr>';
-	$i++;
+if(!empty($search_id)){
+    $sql.= ' AND rowid LIKE "%'. $search_id.'%"';
 }
+if(!empty($search_ref)){
+    $sql.= ' AND reference LIKE '.'"%'.$search_ref.'%"';
+}
+if(!empty($search_tarif)){
+    $sql.= ' AND tarif LIKE "%'. $search_tarif.'%"';
+}
+if(!empty($search_pays)){
+    $sql.= ' AND pays LIKE '.'"%'.$search_pays.'%"';
+}
+if(!empty($search_date_deb)){
+    $sql.= ' AND date_deb LIKE '.'"%'.$search_date_deb.'%"';
+}
+if(!empty($search_date_fin)){
+    $sql.= ' AND date_fin LIKE '.'"%'.$search_date_fin.'%"';
+}
+//print $sql; exit;
 
-//print '</table>';
 
+    $i = 0;
 
+    $resql = $db->query($sql);
+    $num = $db->num_rows($sql);
+
+    while($i<$num){
+
+        $obj = $db->fetch_object($resql);
+        $voyage = new Voyage($db);
+        $voyage->fetch($obj->rowid);
+        print '<tr>';
+
+//	print '<td><a href= " '.dol_buildpath('/voyage/card.php', 1).'?id='. $obj->rowid .' " >' .$obj->reference. '</a></td>';
+        print '<td>'.$voyage->getNomUrl(1).'</td>';
+        print "\n";
+
+        print '<td>'. $obj->reference .'</td>';
+        print "\n";
+
+        print '<td>'. $obj->tarif .'</td>';
+        print "\n";
+
+        print '<td>'. $obj->pays .'</td>';
+        print "\n";
+
+        print '<td>'. $obj->date_deb .'</td>';
+        print "\n";
+
+        print '<td>'. $obj->date_fin .'</td>';
+        print "\n";
+
+        print '</tr>';
+        $i++;
+    }
 
 
 
