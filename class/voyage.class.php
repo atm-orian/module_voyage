@@ -289,7 +289,7 @@ class Voyage extends SeedObject
         $linkend='</a>';
 
         $picto='generic';
-//        $picto='voyage@voyage';
+        //$picto='voyage@voyage';
 
         if ($withpicto) $result.=($link.img_object($label, $picto, 'class="classfortooltip"').$linkend);
         if ($withpicto && $withpicto != 2) $result.=' ';

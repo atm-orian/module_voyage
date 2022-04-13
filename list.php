@@ -24,12 +24,21 @@ if(empty($user->rights->voyage->read)) accessforbidden();
 $langs->load('abricot@abricot');
 $langs->load('voyage@voyage');
 
-$search_id 		        = GETPOST('search_id');
-$search_ref			    = GETPOST('search_ref');
-$search_tarif			= GETPOST('search_tarif');
-$search_pays			= GETPOST('search_pays');
-$search_date_deb		= GETPOST('search_date_deb');
-$search_date_fin		= GETPOST('search_date_fin');
+
+$search_id 		        = trim(GETPOST('search_id', 'int'));
+$search_ref			    = trim(GETPOST('search_ref', 'string'));
+$search_tarif			= trim(GETPOST('search_tarif', 'int'));
+$search_pays			= trim(GETPOST('search_pays', 'string'));
+
+$search_date_deb		= trim(GETPOST('search_date_deb', 'string'));
+$search_date_dConvert = DateTime::createFromFormat('d/m/Y', $search_date_deb);
+
+$search_date_fin		= trim(GETPOST('search_date_fin', 'string'));
+$search_date_fConvert = DateTime::createFromFormat('d/m/Y', $search_date_fin);
+
+//var_dump($_REQUEST);
+
+//$search_date_start = dol_mktime(0, 0, 0, $search_date_startmonth, $search_date_startday, $search_date_startyear);	// Use tzserver
 
 $massaction = GETPOST('massaction', 'alpha');
 $confirmmassaction = GETPOST('confirmmassaction', 'alpha');
@@ -63,6 +72,18 @@ if (!GETPOST('confirmmassaction', 'alpha') && $massaction != 'presend' && $massa
  */
 
 llxHeader('', $langs->trans('voyageList'), '', '');
+
+//BUTTON RESET
+if(GETPOST('button_removefilter_x','alpha')){
+    $search_id = '';
+    $search_date_dConvert='';
+    $search_date_fConvert='';
+    $search_ref='';
+    $search_pays='';
+    $search_tarif='';
+    $sql = 'SELECT * FROM ' . MAIN_DB_PREFIX.'voyage';
+    $sql .= ' WHERE 1=1';
+}
 
 //$type = GETPOST('type');
 //if (empty($user->rights->voyage->all->read)) $type = 'mine';
@@ -101,26 +122,74 @@ if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user
 // List configuration
 $picto = 'voyage@voyage';
 
-//entête
 
+
+
+//FILTER REQUEST
+
+$sql = 'SELECT * FROM ' . MAIN_DB_PREFIX.'voyage';
+$sql .= ' WHERE 1=1';
+
+if(!empty($search_id)){
+    $sql.= ' AND rowid LIKE "%'. $search_id.'%"';
+}
+if(!empty($search_ref)){
+    $sql.= ' AND reference LIKE '.'"%'.$search_ref.'%"';
+}
+if(!empty($search_tarif)){
+    $sql.= ' AND tarif LIKE "%'. $search_tarif.'%"';
+}
+if(!empty($search_pays)){
+    $sql.= ' AND pays LIKE '.'"%'.$search_pays.'%"';
+}
+if(!empty($search_date_deb)){
+    $sql.= ' AND date_deb LIKE '.'"%'.$search_date_dConvert->format('Y-m-d').'%"';
+}
+if(!empty($search_date_fin)){
+    $sql.= ' AND date_fin LIKE '.'"%'.$search_date_fConvert->format('Y-m-d').'%"';
+}
+
+$i = 0;
+$resql = $db->query($sql);
+$num = $db->num_rows($sql);
+
+
+
+
+//LEADING
+
+print '<table><tr>';
+
+print '<td>';
 print_barre_liste("Voyage", $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, $picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
+print '</td>';
+print '<td><span class="opacitymedium colorblack paddingleft">' .'('.$num.')'.'</span></td>';
+print '<td><a class="btnTitle btnTitlePlus" href="'.dol_buildpath('/voyage/card.php?action=create', 1).'" title="Nouveau Voyage"><span class="fa fa-plus-circle valignmiddle btnTitle-icon"></span></a></td>';
 
+print '</tr></table>';
+
+
+//FILTER INPUT
 print '<table class = "liste" width = "100%">' . "\n";
-//TITLE
-
-
 print '<tr class = "liste_titre_filter">';
+
 print '<td><input class="flat" type="text" name="search_id" size="8" value="'.$search_id.'"></td>';
 print '<td><input class="flat" type="text" name="search_ref" size="8" value="'.$search_ref.'"></td>';
 print '<td><input class="flat" type="text" name="search_tarif" size="8" value="'.$search_tarif.'"></td>';
 print '<td><input class="flat" type="text" name="search_pays" size="8" value="'.$search_pays.'"></td>';
-print '<td><input class="flat" type="text" name="search_date_deb" size="8" value="'.$search_date_deb.'"></td>';
-print '<td><input class="flat" type="text" name="search_date_fin" size="8" value="'.$search_date_fin.'"></td>';
+print '<td>'. $form->selectDate('-1','search_date_deb','','') .'</td>';
+print '<td>'. $form->selectDate('-1','search_date_fin','','') .'</td>';
+
+//FILTER BUTTON
 print '<td><button type="submit" class="liste_titre button_search reposition" name="button_search_x" value="x"><span class="fa fa-search"></span></button></td>';
+print '<td><button type="submit" class="liste_titre button_removefilter reposition" name="button_removefilter_x" value="x"><span class="fa fa-remove"></span></button></td>';
+
 print '</tr>';
 
-print '<tr class = "liste_titre">';
 
+//TITLE
+
+print '<tr class = "liste_titre">';
 
 print_liste_field_titre($langs->trans('Id'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
 print "\n";
@@ -144,35 +213,8 @@ print '</tr>';
 
 
 
-$sql = 'SELECT * FROM ' . MAIN_DB_PREFIX.'voyage';
 
-$sql .= ' WHERE 1=1';
-
-if(!empty($search_id)){
-    $sql.= ' AND rowid LIKE "%'. $search_id.'%"';
-}
-if(!empty($search_ref)){
-    $sql.= ' AND reference LIKE '.'"%'.$search_ref.'%"';
-}
-if(!empty($search_tarif)){
-    $sql.= ' AND tarif LIKE "%'. $search_tarif.'%"';
-}
-if(!empty($search_pays)){
-    $sql.= ' AND pays LIKE '.'"%'.$search_pays.'%"';
-}
-if(!empty($search_date_deb)){
-    $sql.= ' AND date_deb LIKE '.'"%'.$search_date_deb.'%"';
-}
-if(!empty($search_date_fin)){
-    $sql.= ' AND date_fin LIKE '.'"%'.$search_date_fin.'%"';
-}
-//print $sql; exit;
-
-
-    $i = 0;
-
-    $resql = $db->query($sql);
-    $num = $db->num_rows($sql);
+//PRINT REQUEST
 
     while($i<$num){
 
@@ -181,8 +223,7 @@ if(!empty($search_date_fin)){
         $voyage->fetch($obj->rowid);
         print '<tr>';
 
-//	print '<td><a href= " '.dol_buildpath('/voyage/card.php', 1).'?id='. $obj->rowid .' " >' .$obj->reference. '</a></td>';
-        print '<td>'.$voyage->getNomUrl(1).'</td>';
+        print '<td>'.$voyage->getNomUrl(0).'</td>';
         print "\n";
 
         print '<td>'. $obj->reference .'</td>';
@@ -194,20 +235,20 @@ if(!empty($search_date_fin)){
         print '<td>'. $obj->pays .'</td>';
         print "\n";
 
-        print '<td>'. $obj->date_deb .'</td>';
+
+        $date_dConvertList = DateTime::createFromFormat('Y-m-d', $obj->date_deb);
+
+        print '<td>'. $date_dConvertList->format('d/m/Y') .'</td>';
         print "\n";
 
-        print '<td>'. $obj->date_fin .'</td>';
+        $date_fConvertList = DateTime::createFromFormat('Y-m-d', $obj->date_deb);
+
+        print '<td>'. $date_fConvertList->format('d/m/Y') .'</td>';
         print "\n";
 
         print '</tr>';
         $i++;
     }
-
-
-
-
-
 
 
 
