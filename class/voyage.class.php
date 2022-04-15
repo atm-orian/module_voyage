@@ -95,7 +95,6 @@ class Voyage extends SeedObject
 	 */
 
 	public $fields = array(
-
 		'reference' => array(
 			'type' => 'varchar(50)',
 			'length' => 50,
@@ -107,40 +106,49 @@ class Voyage extends SeedObject
 			'index' => 1,
 			'position' => 10,
 			'searchall' => 1,
-			'comment' => 'Reference of object'
+			'comment' => 'Reference of object',
+
 		),
 
 		//objet tarif
 		'tarif' => array(
-			'type' => 'int',
+			'type' => 'double',
 			'length' => 10,
 			'label' => 'price',
 			'enabled' => 1,
 			'visible' => 1,
-			'notnull' => 1,
+			'notnull' => 0,
 			'index' => 1,
 			'position' => 15
 
 		),
 
-		'pays' => array(),
+		'pays' => array(
+            'type' => 'varchar(50)',
+            'label' => 'Pays',
+            'length' => 50,
+            'enabled' => 1,
+            'visible' => 1,
+            'notnull' => 0,
+            'position' => 16
+        ),
 
 		'date_deb' => array(
 			'type' => 'date',
-			'label' => 'date_deb',
-			'enabled' => 1,
-			'visible' => 1,
-			'notnull' => 0,
-			'position' => 16
-		),
-
-		'date_fin' => array(
-			'type' => 'date',
-			'label' => 'date_fin',
+			'label' => 'Date de départ',
 			'enabled' => 1,
 			'visible' => 1,
 			'notnull' => 0,
 			'position' => 17
+		),
+
+		'date_fin' => array(
+			'type' => 'date',
+			'label' => 'Date d\'arrivée',
+			'enabled' => 1,
+			'visible' => 1,
+			'notnull' => 0,
+			'position' => 18
 		),
 
 		'entity' => array(
@@ -288,8 +296,8 @@ class Voyage extends SeedObject
 
         $linkend='</a>';
 
-        $picto='generic';
-        //$picto='voyage@voyage';
+//        $picto='generic';
+        $picto='voyage_resized@voyage';
 
         if ($withpicto) $result.=($link.img_object($label, $picto, 'class="classfortooltip"').$linkend);
         if ($withpicto && $withpicto != 2) $result.=' ';
@@ -324,7 +332,7 @@ class Voyage extends SeedObject
     public function getLibStatut($mode = 0)
     {
 //        return self::LibStatut($this->status, $mode);
-		return 'toto';
+		return 'statut';
     }
 }
 

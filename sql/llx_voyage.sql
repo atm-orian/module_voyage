@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS llx_voyage
 (
     rowid integer NOT NULL auto_increment PRIMARY KEY,
     reference varchar(100) NOT NULL,
-    tarif int,
+    tarif double,
     pays varchar(100),
     fk_soc int,
     description text,

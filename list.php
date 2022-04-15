@@ -24,21 +24,27 @@ if(empty($user->rights->voyage->read)) accessforbidden();
 $langs->load('abricot@abricot');
 $langs->load('voyage@voyage');
 
-
+//INIT FILTER VAR
 $search_id 		        = trim(GETPOST('search_id', 'int'));
 $search_ref			    = trim(GETPOST('search_ref', 'string'));
-$search_tarif			= trim(GETPOST('search_tarif', 'int'));
+$search_tarif			= trim(GETPOST('search_tarif', 'double'));
 $search_pays			= trim(GETPOST('search_pays', 'string'));
 
 $search_date_deb		= trim(GETPOST('search_date_deb', 'string'));
-$search_date_dConvert = DateTime::createFromFormat('d/m/Y', $search_date_deb);
+$search_date_dConvert   = DateTime::createFromFormat('d/m/Y', $search_date_deb);
+if(!empty($search_date_dConvert)){
+    $search_date_dConvertTimestamp = $search_date_dConvert->getTimestamp();
+
+}
+
 
 $search_date_fin		= trim(GETPOST('search_date_fin', 'string'));
-$search_date_fConvert = DateTime::createFromFormat('d/m/Y', $search_date_fin);
+$search_date_fConvert   = DateTime::createFromFormat('d/m/Y', $search_date_fin);
+if(!empty($search_date_fConvert)){
+    $search_date_fConvertTimestamp = $search_date_fConvert->getTimestamp();
 
-//var_dump($_REQUEST);
+}
 
-//$search_date_start = dol_mktime(0, 0, 0, $search_date_startmonth, $search_date_startday, $search_date_startyear);	// Use tzserver
 
 $massaction = GETPOST('massaction', 'alpha');
 $confirmmassaction = GETPOST('confirmmassaction', 'alpha');
@@ -70,20 +76,22 @@ if (!GETPOST('confirmmassaction', 'alpha') && $massaction != 'presend' && $massa
 /*
  * View
  */
-
 llxHeader('', $langs->trans('voyageList'), '', '');
+
 
 //BUTTON RESET
 if(GETPOST('button_removefilter_x','alpha')){
     $search_id = '';
-    $search_date_dConvert='';
-    $search_date_fConvert='';
+    $search_date_deb='';
+    $search_date_fin='';
     $search_ref='';
     $search_pays='';
     $search_tarif='';
-    $sql = 'SELECT * FROM ' . MAIN_DB_PREFIX.'voyage';
-    $sql .= ' WHERE 1=1';
+
+    $search_date_dConvertTimestamp = '-1';
+    $search_date_fConvertTimestamp = '-1';
 }
+
 
 //$type = GETPOST('type');
 //if (empty($user->rights->voyage->all->read)) $type = 'mine';
@@ -123,10 +131,7 @@ if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user
 $picto = 'voyage@voyage';
 
 
-
-
 //FILTER REQUEST
-
 $sql = 'SELECT * FROM ' . MAIN_DB_PREFIX.'voyage';
 $sql .= ' WHERE 1=1';
 
@@ -142,6 +147,9 @@ if(!empty($search_tarif)){
 if(!empty($search_pays)){
     $sql.= ' AND pays LIKE '.'"%'.$search_pays.'%"';
 }
+
+//var_dump($search_date_dConvert);exit;
+
 if(!empty($search_date_deb)){
     $sql.= ' AND date_deb LIKE '.'"%'.$search_date_dConvert->format('Y-m-d').'%"';
 }
@@ -149,24 +157,70 @@ if(!empty($search_date_fin)){
     $sql.= ' AND date_fin LIKE '.'"%'.$search_date_fConvert->format('Y-m-d').'%"';
 }
 
+
+//LIMIT AND OFFSET PAGE
 $i = 0;
+$limit = GETPOST('limit', 'int') ? GETPOST('limit', 'int') : $conf->liste_limit;
+$page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("page", 'int');
+if (empty($page) || $page < 0 || GETPOST('button_search', 'alpha') || GETPOST('button_removefilter', 'alpha')) {
+    $page = 0;
+}     // If $page is not defined, or '' or -1 or if we click on clear filters or if we select empty mass action
+$offset = $limit * $page;
+$pageprev = $page - 1;
+$pagenext = $page + 1;
+
+$nbtotalofrecords = '';
+if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST)) {
+    $result = $db->query($sql);
+    $nbtotalofrecords = $db->num_rows($result);
+    if (($page * $limit) > $nbtotalofrecords) {	// if total resultset is smaller then paging size (filtering), goto and load page 0
+        $page = 0;
+        $offset = 0;
+    }
+}
+
+$sql .= $db->plimit($limit + 1, $offset);
 $resql = $db->query($sql);
 $num = $db->num_rows($sql);
 
 
+//PARAM SAVE URL
+$param = '';
+if (!empty($contextpage) && $contextpage != $_SERVER["PHP_SELF"]) {
+    $param .= '&contextpage='.urlencode($contextpage);
+}
+if ($limit > 0 && $limit != $conf->liste_limit) {
+    $param .= '&limit='.urlencode($limit);
+}
+if ($search_id){
+    $param .= '&search_id='.urlencode($search_id);
+}
+if ($search_ref) {
+    $param = '&search_ref='.urlencode($search_ref);
+}
+if ($search_pays){
+    $param = '&search_pays='.urlencode($search_pays);
+}
+if ($search_tarif) {
+    $param = '&search_tarif='.urlencode($search_tarif);
+}
+if ($search_date_deb){
+    $param = '&search_date_dConvert='.urlencode($search_date_deb);
+}
+if ($search_date_fin){
+    $param = '&search_date_fin='.urlencode($search_date_fin);
+}
 
+
+$newcardbutton = '<a class="btnTitle btnTitlePlus" href="'.dol_buildpath('/voyage/card.php?action=create', 1).'" title="Nouveau Voyage"><span class="fa fa-plus-circle valignmiddle btnTitle-icon"></span></a>';
+//var_dump(GETPOST('limit', 'int'));
+
+
+print_barre_liste("Voyage", $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, $picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
 
 //LEADING
-
 print '<table><tr>';
-
-print '<td>';
-print_barre_liste("Voyage", $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, $picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
-print '</td>';
-print '<td><span class="opacitymedium colorblack paddingleft">' .'('.$num.')'.'</span></td>';
-print '<td><a class="btnTitle btnTitlePlus" href="'.dol_buildpath('/voyage/card.php?action=create', 1).'" title="Nouveau Voyage"><span class="fa fa-plus-circle valignmiddle btnTitle-icon"></span></a></td>';
-
-print '</tr></table>';
+print '</tr> </table>';
 
 
 //FILTER INPUT
@@ -177,18 +231,16 @@ print '<td><input class="flat" type="text" name="search_id" size="8" value="'.$s
 print '<td><input class="flat" type="text" name="search_ref" size="8" value="'.$search_ref.'"></td>';
 print '<td><input class="flat" type="text" name="search_tarif" size="8" value="'.$search_tarif.'"></td>';
 print '<td><input class="flat" type="text" name="search_pays" size="8" value="'.$search_pays.'"></td>';
-print '<td>'. $form->selectDate('-1','search_date_deb','','') .'</td>';
-print '<td>'. $form->selectDate('-1','search_date_fin','','') .'</td>';
+print '<td>'. $form->selectDate($search_date_dConvertTimestamp,'search_date_deb','','') .'</td>';
+print '<td>'. $form->selectDate($search_date_fConvertTimestamp,'search_date_fin','','');
 
 //FILTER BUTTON
-print '<td><button type="submit" class="liste_titre button_search reposition" name="button_search_x" value="x"><span class="fa fa-search"></span></button></td>';
-print '<td><button type="submit" class="liste_titre button_removefilter reposition" name="button_removefilter_x" value="x"><span class="fa fa-remove"></span></button></td>';
-
+print '<button type="submit" class="liste_titre button_search reposition" name="button_search_x" value="x"><span class="fa fa-search"></span></button>';
+print '<button type="submit" class="liste_titre button_removefilter reposition" name="button_removefilter_x" value="x"><span class="fa fa-remove"></span></button></td>';
 print '</tr>';
 
 
 //TITLE
-
 print '<tr class = "liste_titre">';
 
 print_liste_field_titre($langs->trans('Id'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
@@ -212,18 +264,16 @@ print "\n";
 print '</tr>';
 
 
-
-
 //PRINT REQUEST
-
-    while($i<$num){
+    while($i<min($num, $limit)){
 
         $obj = $db->fetch_object($resql);
         $voyage = new Voyage($db);
         $voyage->fetch($obj->rowid);
+
         print '<tr>';
 
-        print '<td>'.$voyage->getNomUrl(0).'</td>';
+        print '<td>'.$voyage->getNomUrl(1).'</td>';
         print "\n";
 
         print '<td>'. $obj->reference .'</td>';

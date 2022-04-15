@@ -58,6 +58,9 @@ country=Pays
 startDate=Date de départ
 endDate=Date d'arrivée
 
+# ERROR
+EmptyRef= Champ ref vide
+
 ConfirmValidatevoyageTitle=Confirmation d'activation
 ConfirmValidatevoyageBody=Souhaitez-vous vraiment activer cette fiche voyage %s ?
 

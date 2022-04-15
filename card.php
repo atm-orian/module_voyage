@@ -100,16 +100,29 @@ if (empty($reshook))
 		case 'add':
 //			var_dump($_POST);exit;
 
-			if (empty($ref)) {
-				setEventMessages($langs->trans('ErrorFieldRequired', $langs->transnoentities('Ref')), null, 'errors');
-				$action = "create";
-				$error++;
-			}
-
 			$voyage = new Voyage($db);
 
 			$voyage->reference 				= GETPOST('ref');
+            if (empty($voyage->reference)) {
+//                var_dump($voyage->reference);
+                setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
+                $action = "create";
+                $error++;
+            }
+
+
 			$voyage->tarif 					= GETPOST('tarif');
+
+            //var_dump(is_int($voyage->tarif), $voyage->tarif);exit;
+
+//            if (!is_double($voyage->tarif))
+//            {
+//                setEventMessages($langs->trans('Tarif foireux'), array(), 'errors');
+//                $action = 'create';
+//                $error++;
+//            }
+
+
 			$voyage->pays 					= GETPOST('pays');
 
 			$date_d = GETPOST('date_deb');
@@ -120,7 +133,11 @@ if (empty($reshook))
 			$date_f = GETPOST('date_fin');
 			$date_fConvert= DateTime::createFromFormat('d/m/Y',$date_f);
 			$voyage->date_fin				= $date_fConvert->format('Y-m-d');
-
+            if ($error > 0)
+            {
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?action=create');
+                exit;
+            }
 			$res = $voyage->save($user);
 
 			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
@@ -138,14 +155,9 @@ if (empty($reshook))
 //			$object->date_other = dol_mktime(GETPOST('starthour'), GETPOST('startmin'), 0, GETPOST('startmonth'), GETPOST('startday'), GETPOST('startyear'));
 
 			// Check parameters
-//			if (empty($object->date_other))
-//			{
-//				$error++;
-//				setEventMessages($langs->trans('warning_date_must_be_fill'), array(), 'warnings');
-//			}
+
 
 			// ...
-
 			if ($error > 0)
 			{
 				$action = 'edit';
@@ -164,6 +176,21 @@ if (empty($reshook))
                 header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
                 exit;
             }
+
+        case 'save':
+//            if (empty($voyage->reference)) {
+////                var_dump($voyage->reference);
+//                setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
+//                $action = "update";
+//                $error++;
+//            }
+
+//            if (!(is_double($voyage->tarif)))
+//            {
+//                $error++;
+//                setEventMessages($langs->trans('Tarif foireux'), array(), 'errors');
+//                $action = 'edit';
+//            }
         case 'update_extras':
 
             $object->oldcopy = dol_clone($object);
@@ -256,9 +283,10 @@ if ($action == 'create')
 
 	print '<tr><td >'.$langs->trans("price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('price', $label_security_check)).'"></td> </tr>';
 
-	print '<tr><td >'.$langs->trans("country").'</td> <td> <input name="pays" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('country', $label_security_check)).'"></td> </tr>';
-
-
+	print '<tr><td >'.$langs->trans("country").'</td><td>';
+    //print '<td> <input name="pays" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('country', $label_security_check)).'"></td> </tr>';
+    print $form->select_country((GETPOSTISSET('pays') ? GETPOST('pays') : $voyage->pays), 'pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500');
+    print '</td></tr>';
 
 	// Date de départ
 	print '<tr><td class="">'.$langs->trans('startDate').'</td><td>';
@@ -271,8 +299,6 @@ if ($action == 'create')
 	print '</td></tr>';
 
 	// Other attributes
-
-
     print '</table>'."\n";
 
     dol_fiche_end();
@@ -358,6 +384,7 @@ else
 
             // Common attributes
             //$keyforbreak='fieldkeytoswithonsecondcolumn';
+
             include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
 
             // Other attributes
