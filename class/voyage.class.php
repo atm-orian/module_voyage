@@ -124,7 +124,7 @@ class Voyage extends SeedObject
 		),
 
 		'pays' => array(
-            'type' => 'varchar(50)',
+            'type' => 'integer:Ccountry:core/class/ccountry.class.php',
             'label' => 'Pays',
             'length' => 50,
             'enabled' => 1,

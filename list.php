@@ -132,35 +132,40 @@ $picto = 'voyage@voyage';
 
 
 //FILTER REQUEST
-$sql = 'SELECT * FROM ' . MAIN_DB_PREFIX.'voyage';
+$sql = 'SELECT v.*, c.label as labelpays FROM ' . MAIN_DB_PREFIX.'voyage v';
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country c ON (v.pays = c.rowid) ';
+
 $sql .= ' WHERE 1=1';
 
 if(!empty($search_id)){
-    $sql.= ' AND rowid LIKE "%'. $search_id.'%"';
+    $sql.= ' AND v.rowid LIKE "%'. $search_id.'%"';
 }
 if(!empty($search_ref)){
-    $sql.= ' AND reference LIKE '.'"%'.$search_ref.'%"';
+    $sql.= ' AND v.reference LIKE '.'"%'.$search_ref.'%"';
 }
 if(!empty($search_tarif)){
-    $sql.= ' AND tarif LIKE "%'. $search_tarif.'%"';
+    $sql.= ' AND v.tarif LIKE "%'. $search_tarif.'%"';
 }
 if(!empty($search_pays)){
-    $sql.= ' AND pays LIKE '.'"%'.$search_pays.'%"';
+    $sql.= ' AND v.pays LIKE '.'"%'.$search_pays.'%"';
 }
 
 //var_dump($search_date_dConvert);exit;
 
 if(!empty($search_date_deb)){
-    $sql.= ' AND date_deb LIKE '.'"%'.$search_date_dConvert->format('Y-m-d').'%"';
+    $sql.= ' AND v.date_deb LIKE '.'"%'.$search_date_dConvert->format('Y-m-d').'%"';
 }
 if(!empty($search_date_fin)){
-    $sql.= ' AND date_fin LIKE '.'"%'.$search_date_fConvert->format('Y-m-d').'%"';
+    $sql.= ' AND v.date_fin LIKE '.'"%'.$search_date_fConvert->format('Y-m-d').'%"';
 }
 
 
 //LIMIT AND OFFSET PAGE
 $i = 0;
 $limit = GETPOST('limit', 'int') ? GETPOST('limit', 'int') : $conf->liste_limit;
+$sortfield = GETPOST('sortfield', 'aZ09comma');
+$sortorder = GETPOST('sortorder', 'aZ09comma');
+
 $page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("page", 'int');
 if (empty($page) || $page < 0 || GETPOST('button_search', 'alpha') || GETPOST('button_removefilter', 'alpha')) {
     $page = 0;
@@ -178,7 +183,7 @@ if (empty($conf->global->MAIN_DISABLE_FULL_SCANLIST)) {
         $offset = 0;
     }
 }
-
+$sql .= $db->order($sortfield, $sortorder);
 $sql .= $db->plimit($limit + 1, $offset);
 $resql = $db->query($sql);
 $num = $db->num_rows($sql);
@@ -205,12 +210,11 @@ if ($search_tarif) {
     $param = '&search_tarif='.urlencode($search_tarif);
 }
 if ($search_date_deb){
-    $param = '&search_date_dConvert='.urlencode($search_date_deb);
+    $param = '&search_date_deb='.urlencode($search_date_deb);
 }
 if ($search_date_fin){
     $param = '&search_date_fin='.urlencode($search_date_fin);
 }
-
 
 $newcardbutton = '<a class="btnTitle btnTitlePlus" href="'.dol_buildpath('/voyage/card.php?action=create', 1).'" title="Nouveau Voyage"><span class="fa fa-plus-circle valignmiddle btnTitle-icon"></span></a>';
 //var_dump(GETPOST('limit', 'int'));
@@ -230,7 +234,8 @@ print '<tr class = "liste_titre_filter">';
 print '<td><input class="flat" type="text" name="search_id" size="8" value="'.$search_id.'"></td>';
 print '<td><input class="flat" type="text" name="search_ref" size="8" value="'.$search_ref.'"></td>';
 print '<td><input class="flat" type="text" name="search_tarif" size="8" value="'.$search_tarif.'"></td>';
-print '<td><input class="flat" type="text" name="search_pays" size="8" value="'.$search_pays.'"></td>';
+//print '<td><input class="flat" type="text" name="search_pays" size="8" value="'.$search_pays.'"></td>';
+print '<td>'. $form->select_country('', 'search_pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500').'</td>';
 print '<td>'. $form->selectDate($search_date_dConvertTimestamp,'search_date_deb','','') .'</td>';
 print '<td>'. $form->selectDate($search_date_fConvertTimestamp,'search_date_fin','','');
 
@@ -243,22 +248,22 @@ print '</tr>';
 //TITLE
 print '<tr class = "liste_titre">';
 
-print_liste_field_titre($langs->trans('Id'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('Id'), $_SERVER["PHP_SELF"], 'v.rowid', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('Ref'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('Ref'), $_SERVER["PHP_SELF"], 'v.reference', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('price'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('price'), $_SERVER["PHP_SELF"], 'v.tarif', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('country'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('country'), $_SERVER["PHP_SELF"], 'v.pays', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('startDate'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('startDate'), $_SERVER["PHP_SELF"], 'v.date_deb', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('endDate'), $PHP_SELF, '', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('endDate'), $_SERVER["PHP_SELF"], 'v.date_fin', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
 print '</tr>';
@@ -282,19 +287,29 @@ print '</tr>';
         print '<td>'. $obj->tarif .'</td>';
         print "\n";
 
-        print '<td>'. $obj->pays .'</td>';
+        print '<td>'. $obj->labelpays .'</td>';
         print "\n";
 
 
-        $date_dConvertList = DateTime::createFromFormat('Y-m-d', $obj->date_deb);
+        if(!empty($obj->date_deb)){
+            $date_dConvertList = DateTime::createFromFormat('Y-m-d', $obj->date_deb);
+            print '<td>'. $date_dConvertList->format('d/m/Y') .'</td>';
+            print "\n";
+        }
+        else{
+            print '<td>'. $obj->date_deb.'</td>';
+            print "\n";
+        }
 
-        print '<td>'. $date_dConvertList->format('d/m/Y') .'</td>';
-        print "\n";
-
-        $date_fConvertList = DateTime::createFromFormat('Y-m-d', $obj->date_deb);
-
-        print '<td>'. $date_fConvertList->format('d/m/Y') .'</td>';
-        print "\n";
+        if(!empty($obj->date_fin)){
+            $date_fConvertList = DateTime::createFromFormat('Y-m-d', $obj->date_fin);
+            print '<td>'. $date_fConvertList->format('d/m/Y') .'</td>';
+            print "\n";
+        }
+        else {
+            print '<td>'. $obj->date_fin.'</td>';
+            print "\n";
+        }
 
         print '</tr>';
         $i++;
@@ -305,6 +320,7 @@ print '</tr>';
 $parameters=array('sql'=>$sql);
 $reshook=$hookmanager->executeHooks('printFieldListFooter', $parameters, $object);    // Note that $action and $object may have been modified by hook
 print $hookmanager->resPrint;
+
 
 $formcore->end_form();
 

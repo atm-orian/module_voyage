@@ -152,15 +152,15 @@ class modvoyage extends DolibarrModules
         if (! isset($conf->voyage->enabled)) $conf->voyage->enabled=0;	// This is to avoid warnings
         $this->dictionaries=array(
             'langs'=>'voyage@voyage',
-            'tabname'=>array(MAIN_DB_PREFIX."table1",MAIN_DB_PREFIX."table2",MAIN_DB_PREFIX."table3"),		// List of tables we want to see into dictonnary editor
-            'tablib'=>array("Table1","Table2","Table3"),													// Label of tables
-            'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table1 as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table2 as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table3 as f'),	// Request to select fields
-            'tabsqlsort'=>array("label ASC","label ASC","label ASC"),																					// Sort order
-            'tabfield'=>array("code,label","code,label","code,label"),																					// List of fields (result of select to show dictionary)
-            'tabfieldvalue'=>array("code,label","code,label","code,label"),																				// List of fields (list of fields to edit a record)
-            'tabfieldinsert'=>array("code,label","code,label","code,label"),																			// List of fields (list of fields for insert)
-            'tabrowid'=>array("rowid","rowid","rowid"),																									// Name of columns with primary key (try to always name it 'rowid')
-            'tabcond'=>array($conf->voyage->enabled,$conf->voyage->enabled,$conf->voyage->enabled)												// Condition to show each dictionary
+            'tabname'=>array(MAIN_DB_PREFIX."c_voyage_tag"),		// List of tables we want to see into dictonnary editor
+            'tablib'=>array("Voyage- Catégorie voyage"),			// Label of tables
+            'tabsql'=>array('SELECT vt.rowid as rowid, vt.code as code, vt.label as label,vt.active as active FROM '.MAIN_DB_PREFIX.'c_voyage_tag as vt'),	// Request to select fields
+            'tabsqlsort'=>array("code ASC"),							    						// Sort order
+            'tabfield'=>array("code,label"),														// List of fields (result of select to show dictionary)
+            'tabfieldvalue'=>array("code,label"),													// List of fields (list of fields to edit a record)
+            'tabfieldinsert'=>array("code,label"),													// List of fields (list of fields for insert)
+            'tabrowid'=>array("rowid"),																// Name of columns with primary key (try to always name it 'rowid')
+            'tabcond'=>array($conf->voyage->enabled)												// Condition to show each dictionary
         );
 		/* Example:*/
 
@@ -276,21 +276,6 @@ class modvoyage extends DolibarrModules
 			);				                // 0=Menu for internal users, 1=external users, 2=both
 			$r++;
 
-        $this->menu[$r]=array(
-            'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-            'type'=>'left',			                // This is a Left menu entry
-            'titre'=>'Catégorie',
-            'mainmenu'=>'voyage',
-            'leftmenu'=>'voyage_left_tag',
-            'url'=>'/voyage/',
-            'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-            'position'=>100+$r,
-            'enabled'=> '$conf->voyage->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-            'perms'=> '$user->rights->voyage->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-            'target'=>'',
-            'user'=>0
-        );
-        $r++;
 
         /*
                     $this->menu[$r]=array(

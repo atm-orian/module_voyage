@@ -41,6 +41,7 @@ $langs->load('voyage@voyage');
 $action = GETPOST('action');
 $id = GETPOST('id', 'int');
 $ref = GETPOST('ref');
+$cancel = GETPOST('cancel', 'alpha');
 
 $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'voyagecard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
@@ -95,12 +96,13 @@ if (empty($reshook))
 
     $error = 0;
 
+//    var_dump($action);exit;
+    $voyage = new Voyage($db);
 
 	switch ($action) {
 		case 'add':
 //			var_dump($_POST);exit;
 
-			$voyage = new Voyage($db);
 
 			$voyage->reference 				= GETPOST('ref');
             if (empty($voyage->reference)) {
@@ -111,28 +113,35 @@ if (empty($reshook))
             }
 
 
-			$voyage->tarif 					= GETPOST('tarif');
+			$voyage->tarif 					= GETPOST('tarif','int');
 
-            //var_dump(is_int($voyage->tarif), $voyage->tarif);exit;
+//            var_dump(is_double($voyage->tarif), $voyage->tarif);exit;
 
-//            if (!is_double($voyage->tarif))
+//             (!is_double($voyage->tarif))
 //            {
-//                setEventMessages($langs->trans('Tarif foireux'), array(), 'errors');
+//                setEventMessages($langs->trans('PriceError'), array(), 'errors');
 //                $action = 'create';
 //                $error++;
 //            }
 
 
-			$voyage->pays 					= GETPOST('pays');
+			$voyage->pays 					= GETPOST('pays', 'alpha');
 
 			$date_d = GETPOST('date_deb');
-            $date_dConvert = DateTime::createFromFormat('d/m/Y', $date_d);
-			$voyage->date_deb				= $date_dConvert->format('Y-m-d');
+            if(!empty($date_d)){
+                $date_dConvert = DateTime::createFromFormat('d/m/Y', $date_d);
+                $voyage->date_deb				= $date_dConvert->format('Y-m-d');
+            }
+
+
 
 
 			$date_f = GETPOST('date_fin');
-			$date_fConvert= DateTime::createFromFormat('d/m/Y',$date_f);
-			$voyage->date_fin				= $date_fConvert->format('Y-m-d');
+            if(!empty($date_f)){
+                $date_fConvert= DateTime::createFromFormat('d/m/Y',$date_f);
+                $voyage->date_fin				= $date_fConvert->format('Y-m-d');
+            }
+
             if ($error > 0)
             {
                 header('Location: '.dol_buildpath('/voyage/card.php', 1).'?action=create');
@@ -144,18 +153,27 @@ if (empty($reshook))
 
 			break;
 		case 'update':
-			$object->setValues($_REQUEST); // Set standard attributes
+            //var_dump($_REQUEST);exit;
 
-            if ($object->isextrafieldmanaged)
+            $voyage->setValues($_REQUEST); // Set standard attributes
+
+            if ($voyage->isextrafieldmanaged)
             {
-                $ret = $extrafields->setOptionalsFromPost($extralabels, $object);
+                $ret = $extrafields->setOptionalsFromPost($extralabels, $voyage);
                 if ($ret < 0) $error++;
+            }
+
+            //var_dump(array($object, $voyage));exit;
+            if (empty($voyage->reference)) {
+//                var_dump($voyage->reference);
+                setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
+                $action = "edit";
+                $error++;
             }
 
 //			$object->date_other = dol_mktime(GETPOST('starthour'), GETPOST('startmin'), 0, GETPOST('startmonth'), GETPOST('startday'), GETPOST('startyear'));
 
 			// Check parameters
-
 
 			// ...
 			if ($error > 0)
@@ -164,33 +182,19 @@ if (empty($reshook))
 				break;
 			}
 
-			$res = $object->save($user);
+			$res = $voyage->save($user);
             if ($res < 0)
             {
-                setEventMessage($object->errors, 'errors');
-                if (empty($object->id)) $action = 'create';
+                setEventMessage($voyage->errors, 'errors');
+                if (empty($voyage->id)) $action = 'create';
                 else $action = 'edit';
             }
             else
             {
-                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
                 exit;
             }
 
-        case 'save':
-//            if (empty($voyage->reference)) {
-////                var_dump($voyage->reference);
-//                setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
-//                $action = "update";
-//                $error++;
-//            }
-
-//            if (!(is_double($voyage->tarif)))
-//            {
-//                $error++;
-//                setEventMessages($langs->trans('Tarif foireux'), array(), 'errors');
-//                $action = 'edit';
-//            }
         case 'update_extras':
 
             $object->oldcopy = dol_clone($object);
@@ -285,7 +289,10 @@ if ($action == 'create')
 
 	print '<tr><td >'.$langs->trans("country").'</td><td>';
     //print '<td> <input name="pays" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('country', $label_security_check)).'"></td> </tr>';
-    print $form->select_country((GETPOSTISSET('pays') ? GETPOST('pays') : $voyage->pays), 'pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500');
+    print $form->select_country('', 'pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500');
+    //var_dump($form->select_country());exit;
+    //$selected =
+    //(GETPOSTISSET('pays') ? GETPOST('pays') : $voyage->pays)
     print '</td></tr>';
 
 	// Date de départ
@@ -374,7 +381,10 @@ else
 
 
             $morehtmlstatus.=''; //$object->getLibStatut(2); // pas besoin fait doublon
-            dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref, '', 0, '', $morehtmlstatus);
+
+            $shownav = 1;
+
+            dol_banner_tab($object, 'ref', $linkback, $shownav, 'ref', 'ref', $morehtmlref, '', 0, '', $morehtmlstatus);
 
             print '<div class="fichecenter">';
 

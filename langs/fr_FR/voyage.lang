@@ -60,6 +60,7 @@ endDate=Date d'arrivée
 
 # ERROR
 EmptyRef= Champ ref vide
+PriceError = Tarif invalide
 
 ConfirmValidatevoyageTitle=Confirmation d'activation
 ConfirmValidatevoyageBody=Souhaitez-vous vraiment activer cette fiche voyage %s ?

@@ -1,0 +1,1 @@
+ALTER TABLE llx_c_voyage_tag ADD CONSTRAINT uc_voyage_code unique (code);
