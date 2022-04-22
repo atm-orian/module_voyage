@@ -32,18 +32,19 @@ $search_pays			= trim(GETPOST('search_pays', 'string'));
 
 $search_date_deb		= trim(GETPOST('search_date_deb', 'string'));
 $search_date_dConvert   = DateTime::createFromFormat('d/m/Y', $search_date_deb);
+
 if(!empty($search_date_dConvert)){
     $search_date_dConvertTimestamp = $search_date_dConvert->getTimestamp();
-
 }
-
 
 $search_date_fin		= trim(GETPOST('search_date_fin', 'string'));
 $search_date_fConvert   = DateTime::createFromFormat('d/m/Y', $search_date_fin);
+
 if(!empty($search_date_fConvert)){
     $search_date_fConvertTimestamp = $search_date_fConvert->getTimestamp();
-
 }
+
+$ArraySearch_tag = GETPOST('search_tag', 'array');
 
 
 $massaction = GETPOST('massaction', 'alpha');
@@ -90,6 +91,9 @@ if(GETPOST('button_removefilter_x','alpha')){
 
     $search_date_dConvertTimestamp = '-1';
     $search_date_fConvertTimestamp = '-1';
+
+    $ArraySearch_tag=[];
+    //var_dump($ArraySearch_tag);
 }
 
 
@@ -129,12 +133,15 @@ if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user
 
 // List configuration
 $picto = 'voyage@voyage';
+$ArrayLabel = Voyage::getStaticArrayTag();
 
 
 //FILTER REQUEST
-$sql = 'SELECT v.*, c.label as labelpays FROM ' . MAIN_DB_PREFIX.'voyage v';
-$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country c ON (v.pays = c.rowid) ';
-
+$sql = 'SELECT v.*, c.label as labelpays, GROUP_CONCAT(vt.label) as grouplabel FROM ' . MAIN_DB_PREFIX.'voyage v';
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country c ON (v.pays = c.rowid)';
+$sql.= ' LEFT JOIN ' .MAIN_DB_PREFIX.'voyage_link vl ON (v.rowid = vl.fk_voyage)';
+$sql.= ' LEFT JOIN ' .MAIN_DB_PREFIX.'c_voyage_tag vt ON (vl.fk_tag = vt.rowid)';
+//group by et subquery
 $sql .= ' WHERE 1=1';
 
 if(!empty($search_id)){
@@ -149,15 +156,20 @@ if(!empty($search_tarif)){
 if(!empty($search_pays)){
     $sql.= ' AND v.pays LIKE '.'"%'.$search_pays.'%"';
 }
-
-//var_dump($search_date_dConvert);exit;
-
 if(!empty($search_date_deb)){
     $sql.= ' AND v.date_deb LIKE '.'"%'.$search_date_dConvert->format('Y-m-d').'%"';
 }
 if(!empty($search_date_fin)){
     $sql.= ' AND v.date_fin LIKE '.'"%'.$search_date_fConvert->format('Y-m-d').'%"';
 }
+if(!empty($ArraySearch_tag)){
+    foreach ($ArraySearch_tag as $search_tag){
+        $sql.= ' AND vt.rowid LIKE '.'"%'.$search_tag.'%"';
+    }
+}
+$sql .= ' GROUP BY v.rowid';
+
+//var_dump($sql);
 
 
 //LIMIT AND OFFSET PAGE
@@ -215,14 +227,17 @@ if ($search_date_deb){
 if ($search_date_fin){
     $param = '&search_date_fin='.urlencode($search_date_fin);
 }
+if ($ArraySearch_tag){
+    $param = '&search_tag='.urlencode($search_tag);
+}
+
+
 
 $newcardbutton = '<a class="btnTitle btnTitlePlus" href="'.dol_buildpath('/voyage/card.php?action=create', 1).'" title="Nouveau Voyage"><span class="fa fa-plus-circle valignmiddle btnTitle-icon"></span></a>';
-//var_dump(GETPOST('limit', 'int'));
 
-
-print_barre_liste("Voyage", $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, $picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
 
 //LEADING
+print_barre_liste("Voyage", $page, $_SERVER["PHP_SELF"], $param, $sortfield, $sortorder, $massactionbutton, $num, $nbtotalofrecords, $picto, 0, $newcardbutton, '', $limit, 0, 0, 1);
 print '<table><tr>';
 print '</tr> </table>';
 
@@ -235,9 +250,10 @@ print '<td><input class="flat" type="text" name="search_id" size="8" value="'.$s
 print '<td><input class="flat" type="text" name="search_ref" size="8" value="'.$search_ref.'"></td>';
 print '<td><input class="flat" type="text" name="search_tarif" size="8" value="'.$search_tarif.'"></td>';
 //print '<td><input class="flat" type="text" name="search_pays" size="8" value="'.$search_pays.'"></td>';
-print '<td>'. $form->select_country('', 'search_pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500').'</td>';
+print '<td>'. $form->select_country($search_pays, 'search_pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500').'</td>';
 print '<td>'. $form->selectDate($search_date_dConvertTimestamp,'search_date_deb','','') .'</td>';
-print '<td>'. $form->selectDate($search_date_fConvertTimestamp,'search_date_fin','','');
+print '<td>'. $form->selectDate($search_date_fConvertTimestamp,'search_date_fin','','') .'</td>';
+print '<td>' . Form::multiselectarray('search_tag', $ArrayLabel, $ArraySearch_tag);
 
 //FILTER BUTTON
 print '<button type="submit" class="liste_titre button_search reposition" name="button_search_x" value="x"><span class="fa fa-search"></span></button>';
@@ -266,6 +282,9 @@ print "\n";
 print_liste_field_titre($langs->trans('endDate'), $_SERVER["PHP_SELF"], 'v.date_fin', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
+print_liste_field_titre($langs->trans('tag'), $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder);
+print "\n";
+
 print '</tr>';
 
 
@@ -273,8 +292,11 @@ print '</tr>';
     while($i<min($num, $limit)){
 
         $obj = $db->fetch_object($resql);
+
         $voyage = new Voyage($db);
         $voyage->fetch($obj->rowid);
+
+        //var_dump($obj);exit;
 
         print '<tr>';
 
@@ -310,6 +332,9 @@ print '</tr>';
             print '<td>'. $obj->date_fin.'</td>';
             print "\n";
         }
+
+        print '<td>'.$obj->grouplabel .'</td>';
+        print "\n";
 
         print '</tr>';
         $i++;

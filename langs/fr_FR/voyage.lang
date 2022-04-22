@@ -52,11 +52,12 @@ voyageReopen=Rouvrir
 voyageCancel=Abandonner
 voyageDelete=Supprimer
 
-label=libellé
+label=Libellé
 price=Tarif
 country=Pays
 startDate=Date de départ
 endDate=Date d'arrivée
+tag=Catégorie(s)
 
 # ERROR
 EmptyRef= Champ ref vide

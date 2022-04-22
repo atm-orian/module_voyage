@@ -130,7 +130,9 @@ class Voyage extends SeedObject
             'enabled' => 1,
             'visible' => 1,
             'notnull' => 0,
-            'position' => 16
+            'position' => 16,
+            'required' => true,
+            'default' => -1
         ),
 
 		'date_deb' => array(
@@ -180,14 +182,6 @@ class Voyage extends SeedObject
 //			'position' => 60
 //		),
 
-//		'date_creation' => array(
-//			'type'=>'datetime',
-//			'label'=>'DateCreation',
-//			'enabled'=>1,
-//			'position'=>500,
-//			'notnull'=>1,
-//			'visible'=>-2,
-//			'position'=>80),
 //
 //		'tms' =>array(
 //			'type'=>'timestamp',
@@ -242,6 +236,7 @@ class Voyage extends SeedObject
      */
     public function delete(User &$user, $notrigger = false)
     {
+        $this->deleteVoyage($this->id);
         $this->deleteObjectLinked();
 
         unset($this->fk_element); // avoid conflict with standard Dolibarr comportment
@@ -325,10 +320,73 @@ class Voyage extends SeedObject
     }
 
 
+    public static function getStaticArrayTag()
+    {
+        global $db;
+
+        $sql = 'SELECT vt.label, vt.rowid FROM ' . MAIN_DB_PREFIX.'c_voyage_tag vt';
+        $resql = $db->query($sql);
+
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabel[$obj->rowid] = $obj->label;
+        }
+            return $ArrayLabel;
+    }
+
+
+    public static function getStaticArrayPreselectedTag($id)
+    {
+        global $db;
+        $sql = 'SELECT vt.label, vt.rowid FROM ' . MAIN_DB_PREFIX.'c_voyage_tag vt';
+        $sql .= ' LEFT JOIN ' .MAIN_DB_PREFIX.'voyage_link vl ON (vt.rowid = vl.fk_tag)';
+        $sql .= ' WHERE vl.fk_voyage='.$id;
+        $resql = $db->query($sql);
+        //var_dump($db);
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabel[] = $obj->rowid;
+        }
+            return $ArrayLabel;
+    }
+
+
+    public function setLabelTag($rowidVoyage, $rowidTag)
+    {
+        global $db;
+
+        $sql = 'INSERT INTO ' . MAIN_DB_PREFIX.'voyage_link (fk_voyage, fk_tag) VALUES (\''.$rowidVoyage.'\',\''.$rowidTag.'\')';
+        $resql = $db->query($sql);
+
+    }
+
+    public function getValueRowidTag($id)
+    {
+        global $db;
+        $ArrayLabelTag= [];
+        $sql = 'SELECT vt.rowid, vt.label FROM ' . MAIN_DB_PREFIX. 'c_voyage_tag vt';
+        $sql .= ' LEFT JOIN ' .MAIN_DB_PREFIX.'voyage_link vl ON (vt.rowid = vl.fk_tag)';
+        $sql .= ' WHERE vl.fk_voyage='.$id;
+        $resql = $db->query($sql);
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabelTag[$obj->rowid] = $obj->label;
+        }
+        return $ArrayLabelTag;
+    }
+
+
+    public function deleteVoyage($id)
+    {
+        global $db;
+        $sql = 'DELETE FROM '. MAIN_DB_PREFIX. 'voyage_link';
+        $sql .= ' WHERE fk_voyage='.$id;
+        $resql = $db->query($sql);
+
+    }
+
     /**
      * @param int $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto
      * @return string
      */
+
     public function getLibStatut($mode = 0)
     {
 //        return self::LibStatut($this->status, $mode);

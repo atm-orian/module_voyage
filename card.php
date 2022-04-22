@@ -42,6 +42,13 @@ $action = GETPOST('action');
 $id = GETPOST('id', 'int');
 $ref = GETPOST('ref');
 $cancel = GETPOST('cancel', 'alpha');
+$ArrayLabel = Voyage::getStaticArrayTag();
+
+if($id){
+    $ArrayLabelPreselected = Voyage::getStaticArrayPreselectedTag($id);
+}
+
+
 
 $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'voyagecard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
@@ -142,12 +149,28 @@ if (empty($reshook))
                 $voyage->date_fin				= $date_fConvert->format('Y-m-d');
             }
 
+
             if ($error > 0)
             {
                 header('Location: '.dol_buildpath('/voyage/card.php', 1).'?action=create');
                 exit;
             }
 			$res = $voyage->save($user);
+
+
+            $rowidVoyage = $voyage->id;
+            $rowidTag = GETPOST('tag','array');
+
+            if(!empty(GETPOST('tag','alpha')))
+            {
+                foreach ($rowidTag as $valueRowidTag){
+                    $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
+                }
+            }
+
+
+
+            //var_dump($voyage);exit;
 
 			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
 
@@ -156,6 +179,20 @@ if (empty($reshook))
             //var_dump($_REQUEST);exit;
 
             $voyage->setValues($_REQUEST); // Set standard attributes
+//            var_dump($_REQUEST);exit;
+
+
+            $rowidVoyage = $voyage->id;
+            $rowidTag = GETPOST('tag','array');
+
+            if(!empty(GETPOST('tag','alpha')))
+            {
+                $voyage->deleteVoyage($rowidVoyage);
+                foreach ($rowidTag as $valueRowidTag){
+                    $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
+
+                }
+            }
 
             if ($voyage->isextrafieldmanaged)
             {
@@ -234,6 +271,7 @@ if (empty($reshook))
 		case 'confirm_validate':
 			if (!empty($user->rights->voyage->write)) $object->setValid($user);
 
+
 			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
 			exit;
 
@@ -305,6 +343,15 @@ if ($action == 'create')
 	print $form->selectDate('','date_fin','','');
 	print '</td></tr>';
 
+
+    print '<tr><td class="">'.$langs->trans('tag').'</td><td>';
+
+    print Form::multiselectarray('tag',$ArrayLabel, GETPOST('tag', 'array'));
+
+    print '</td></tr>';
+
+
+
 	// Other attributes
     print '</table>'."\n";
 
@@ -343,6 +390,11 @@ else
 
             // Common attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
+
+            print '<tr><td > Catégorie </td>';
+
+            print '<td>'.Form::multiselectarray('tag',$ArrayLabel, $ArrayLabelPreselected).'</td>';
+            print '</tr>';
 
             // Other attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
@@ -384,7 +436,7 @@ else
 
             $shownav = 1;
 
-            dol_banner_tab($object, 'ref', $linkback, $shownav, 'ref', 'ref', $morehtmlref, '', 0, '', $morehtmlstatus);
+            dol_banner_tab($object, '', $linkback, $shownav, '');
 
             print '<div class="fichecenter">';
 
@@ -396,6 +448,23 @@ else
             //$keyforbreak='fieldkeytoswithonsecondcolumn';
 
             include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+
+            print '<tr><td > Catégorie </td>';
+
+                //var_dump($id, $voyage);exit;
+            print '<td id="product_extras_test_12" class="valuefield product_extras_test wordbreak"><div class="select2-container-multi-dolibarr" style="width: 90%;" ><ul class="select2-choices-dolibarr">';
+                $valueRowidTag = $voyage->getValueRowidTag($id);
+                if (!empty($valueRowidTag)){
+                    foreach ($valueRowidTag as $row){
+                        print '<li class="select2-search-choice-dolibarr noborderoncategories" style="background: #bbb">'.$row. '</li>';
+                    }
+                }
+
+                print '</ul></div></td></tr>';
+
+
+ //var_dump($object);exit;
+
 
             // Other attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
