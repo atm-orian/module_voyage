@@ -382,6 +382,63 @@ class Voyage extends SeedObject
 
     }
 
+    public function setTarif($rowidVoyage,$rowidTag)
+    {
+        $i =0;
+        global $db;
+        $object = new voyage($db);
+
+            foreach($rowidTag as $row){
+                $i++;
+            }
+            if ($i==1){
+                $tarift = $object->findTarifWithOneTag($rowidTag[0]);
+                //var_dump($tarift,$rowidTag[0]);exit;
+                $object->setTarifDependsOneTag($rowidVoyage,$tarift);
+            }
+
+            else{
+                $object->setTarifEmptyOrmultiTag($rowidVoyage); //If there are many tags or nothing, put a default tag
+            }
+
+    }
+
+    public function findTarifWithOneTag($valueRowidTag)
+    {
+        global $db;
+        $sql = 'SELECT vt.tarift FROM '.MAIN_DB_PREFIX.'c_voyage_tag vt';
+        $sql .= ' WHERE vt.rowid='.$valueRowidTag;
+        $resql = $db->query($sql);
+        $obj = $db->fetch_object($resql);
+            return $obj->tarift;
+
+    }
+
+    public function setTarifDependsOneTag($rowidVoyage,$tarift)
+    {
+        global $db;
+        $sql = 'INSERT INTO ' . MAIN_DB_PREFIX.'voyage (tarif) VALUES (\''.$tarift.'\')';
+        $sql .=' WHERE rowid='.$rowidVoyage;
+        $resql = $db->query($sql);
+        
+    }
+
+
+
+
+    public function getOneTagCurrentVoyage($rowidVoyage){
+        //SELECT the tag of the current voyage
+        //After insert tarif depends on tag
+
+        global $db;
+        $sql = 'SELECT vt.label FROM '. MAIN_DB_PREFIX.'c_voyage_tag vt';
+        $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'voyage_link vl ON (vl.fk_tag = vt.rowid)';
+        $sql .= ' WHERE vl.fk_voyage='.$rowidVoyage;
+        $resql = $db->query($sql);
+        $obj = $db->fetch_object($resql);
+            return $obj->label;
+    }
+
     /**
      * @param int $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto
      * @return string

@@ -150,18 +150,62 @@ class modvoyage extends DolibarrModules
 		$this->dictionaries=array();
 
         if (! isset($conf->voyage->enabled)) $conf->voyage->enabled=0;	// This is to avoid warnings
+
+        $tabsql = 'SELECT vt.rowid as rowid, vt.code as code, vt.label as label,vt.active as active, vt.tarift as tarift FROM '.MAIN_DB_PREFIX.'c_voyage_tag as vt';
+
+
         $this->dictionaries=array(
+
             'langs'=>'voyage@voyage',
-            'tabname'=>array(MAIN_DB_PREFIX."c_voyage_tag"),		// List of tables we want to see into dictonnary editor
-            'tablib'=>array("Voyage- Catégorie voyage"),			// Label of tables
-            'tabsql'=>array('SELECT vt.rowid as rowid, vt.code as code, vt.label as label,vt.active as active FROM '.MAIN_DB_PREFIX.'c_voyage_tag as vt'),	// Request to select fields
-            'tabsqlsort'=>array("code ASC"),							    						// Sort order
-            'tabfield'=>array("code,label"),														// List of fields (result of select to show dictionary)
-            'tabfieldvalue'=>array("code,label"),													// List of fields (list of fields to edit a record)
-            'tabfieldinsert'=>array("code,label"),													// List of fields (list of fields for insert)
-            'tabrowid'=>array("rowid"),																// Name of columns with primary key (try to always name it 'rowid')
+
+            'tabname'=>array
+            (
+                MAIN_DB_PREFIX."c_voyage_tag",
+
+            ),		// List of tables we want to see into dictonnary editor
+
+            'tablib'=>array
+            (
+                "Voyage- Catégorie voyage"
+            ),			// Label of tables
+
+            'tabsql'=>array
+            (
+                $tabsql
+            ),	// Request to select fields
+
+            'tabsqlsort'=>array
+            (
+                "code ASC"
+            ),							    						// Sort order
+
+            'tabfield'=>array
+            (
+                "code,label,tarift"
+            ),														// List of fields (result of select to show dictionary)
+
+            'tabfieldvalue'=>array(
+                "code,label,tarift"
+            ),
+
+            // List of fields (list of fields to edit a record)
+            'tabfieldinsert'=>array
+            (
+                "code,label,tarift"
+            ),
+            // List of fields (list of fields for insert)
+            'tabrowid'=>array
+            (
+                "rowid"
+            ),																// Name of columns with primary key (try to always name it 'rowid')
             'tabcond'=>array($conf->voyage->enabled)												// Condition to show each dictionary
         );
+
+
+
+
+
+
 		/* Example:*/
 
         // Boxes

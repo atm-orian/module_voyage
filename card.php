@@ -110,7 +110,6 @@ if (empty($reshook))
 		case 'add':
 //			var_dump($_POST);exit;
 
-
 			$voyage->reference 				= GETPOST('ref');
             if (empty($voyage->reference)) {
 //                var_dump($voyage->reference);
@@ -160,7 +159,7 @@ if (empty($reshook))
 
             $rowidVoyage = $voyage->id;
             $rowidTag = GETPOST('tag','array');
-
+//var_dump($rowidTag);exit;
             if(!empty(GETPOST('tag','alpha')))
             {
                 foreach ($rowidTag as $valueRowidTag){
@@ -168,7 +167,11 @@ if (empty($reshook))
                 }
             }
 
+            //TARIF
 
+            if (empty($voyage->tarif)){
+                $voyage->setTarif($rowidVoyage,$rowidTag);
+            }
 
             //var_dump($voyage);exit;
 
