@@ -166,7 +166,7 @@ class modvoyage extends DolibarrModules
 
             'tablib'=>array
             (
-                "Voyage- Catégorie voyage"
+                "VoyageTag"
             ),			// Label of tables
 
             'tabsql'=>array
@@ -291,7 +291,7 @@ class modvoyage extends DolibarrModules
 			$this->menu[$r]=array(
                 'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
                 'type'=>'left',			                // This is a Left menu entry
-                'titre'=>'Liste voyage',
+                'titre'=>'voyageList',
                 'mainmenu'=>'voyage',
                 'leftmenu'=>'voyage_left_list',			// Goes into left menu previously created by the mainmenu
                 'url'=>'/voyage/list.php',

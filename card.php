@@ -169,8 +169,12 @@ if (empty($reshook))
 
             //TARIF
 
-            if (empty($voyage->tarif)){
+            if (empty($voyage->tarif) && !(empty($rowidTag))){
                 $voyage->setTarif($rowidVoyage,$rowidTag);
+            }
+            elseif(empty($voyage->tarif) && (empty($rowidTag))){
+                $voyage->tarif = $conf->global->VOYAGE_TARIF;
+                $voyage->save($user);
             }
 
             //var_dump($voyage);exit;
@@ -326,9 +330,9 @@ if ($action == 'create')
 
 	print '<tr><td class="fieldrequired">'.$langs->trans("Ref").'</td><td><input name="ref" class="minwidth300 maxwidth400onsmartphone" maxlength="255" value="'.dol_escape_htmltag(GETPOST('label', $label_security_check)).'"></td></tr>';
 
-	print '<tr><td >'.$langs->trans("price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('price', $label_security_check)).'"></td> </tr>';
+	print '<tr><td >'.$langs->trans("Price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('price', $label_security_check)).'"></td> </tr>';
 
-	print '<tr><td >'.$langs->trans("country").'</td><td>';
+	print '<tr><td >'.$langs->trans("Country").'</td><td>';
     //print '<td> <input name="pays" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('country', $label_security_check)).'"></td> </tr>';
     print $form->select_country('', 'pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500');
     //var_dump($form->select_country());exit;
@@ -337,17 +341,17 @@ if ($action == 'create')
     print '</td></tr>';
 
 	// Date de départ
-	print '<tr><td class="">'.$langs->trans('startDate').'</td><td>';
+	print '<tr><td class="">'.$langs->trans('StartDate').'</td><td>';
 	print $form->selectDate('','date_deb','','');
 	print '</td></tr>';
 
 	// Date d'arrivée
-	print '<tr><td class="">'.$langs->trans('endDate').'</td><td>';
+	print '<tr><td class="">'.$langs->trans('EndDate').'</td><td>';
 	print $form->selectDate('','date_fin','','');
 	print '</td></tr>';
 
 
-    print '<tr><td class="">'.$langs->trans('tag').'</td><td>';
+    print '<tr><td class="">'.$langs->trans('Tag').'</td><td>';
 
     print Form::multiselectarray('tag',$ArrayLabel, GETPOST('tag', 'array'));
 

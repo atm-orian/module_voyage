@@ -17,6 +17,11 @@ voyageNewRightsDefinedCheckUserRights=Ce module utilise ces propres droits utili
 ParamLabel=Nom du paramètre
 ParamDesc=Une description si besoin
 ParamHelp=Le contenu de l'aide
+TarifDefault = Tarif par défaut
+
+#MODVOYAGE
+
+VoyageTag = Voyage- Catégorie voyage
 
 # MENU
 TopMenuvoyage=voyage
@@ -52,12 +57,12 @@ voyageReopen=Rouvrir
 voyageCancel=Abandonner
 voyageDelete=Supprimer
 
-label=Libellé
-price=Tarif
-country=Pays
-startDate=Date de départ
-endDate=Date d'arrivée
-tag=Catégorie(s)
+Label=Libellé
+Price=Tarif
+Country=Pays
+StartDate=Date de départ
+EndDate=Date d'arrivée
+Tag=Catégorie(s)
 
 # ERROR
 EmptyRef= Champ ref vide

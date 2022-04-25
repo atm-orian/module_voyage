@@ -93,7 +93,6 @@ if(GETPOST('button_removefilter_x','alpha')){
     $search_date_fConvertTimestamp = '-1';
 
     $ArraySearch_tag=[];
-    //var_dump($ArraySearch_tag);
 }
 
 
@@ -102,24 +101,31 @@ if(GETPOST('button_removefilter_x','alpha')){
 
 // TODO ajouter les champs de son objet que l'on souhaite afficher
 $keys = array_keys($object->fields);
-$fieldList = 't.'.implode(', t.', $keys);
+$fieldList = 'v.'.implode(', v.', $keys);
 if (!empty($object->isextrafieldmanaged))
 {
     $keys = array_keys($extralabels);
 	if(!empty($keys)) {
-		$fieldList .= ', et.' . implode(', et.', $keys);
+		$fieldList .= ', ve.' . implode(', ve.', $keys);
 	}
 }
 
-$sql = 'SELECT '.$fieldList;
+$sql = 'SELECT v.*, c.label as labelpays, GROUP_CONCAT(vt.label) as grouplabel, '.$fieldList;
 
 // Add fields from hooks
 $parameters=array('sql' => $sql);
 $reshook=$hookmanager->executeHooks('printFieldListSelect', $parameters, $object);    // Note that $action and $object may have been modified by hook
 $sql.=$hookmanager->resPrint;
 
-$sql.= ' FROM '.MAIN_DB_PREFIX.'voyage t ';
+$sql.= ' FROM '.MAIN_DB_PREFIX.'voyage v';
 
+$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country c ON (v.pays = c.rowid)';
+$sql.= ' LEFT JOIN ' .MAIN_DB_PREFIX.'voyage_link vl ON (v.rowid = vl.fk_voyage)';
+$sql.= ' LEFT JOIN ' .MAIN_DB_PREFIX.'c_voyage_tag vt ON (vl.fk_tag = vt.rowid)';
+
+if (!empty($object->isextrafieldmanaged)){
+    $sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'voyage_extrafields ve ON (ve.fk_object = v.rowid)';
+}
 
 // Add where from hooks
 $parameters=array('sql' => $sql);
@@ -135,26 +141,23 @@ if (empty($nbLine)) $nbLine = !empty($user->conf->MAIN_SIZE_LISTE_LIMIT) ? $user
 $picto = 'voyage@voyage';
 $ArrayLabel = Voyage::getStaticArrayTag();
 
-
 //FILTER REQUEST
-$sql = 'SELECT v.*, c.label as labelpays, GROUP_CONCAT(vt.label) as grouplabel FROM ' . MAIN_DB_PREFIX.'voyage v';
-$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'c_country c ON (v.pays = c.rowid)';
-$sql.= ' LEFT JOIN ' .MAIN_DB_PREFIX.'voyage_link vl ON (v.rowid = vl.fk_voyage)';
-$sql.= ' LEFT JOIN ' .MAIN_DB_PREFIX.'c_voyage_tag vt ON (vl.fk_tag = vt.rowid)';
+//$sql = 'SELECT v.*, c.label as labelpays, GROUP_CONCAT(vt.label) as grouplabel FROM ' . MAIN_DB_PREFIX.'voyage v';
+
 //group by et subquery
 $sql .= ' WHERE 1=1';
 
 if(!empty($search_id)){
-    $sql.= ' AND v.rowid LIKE "%'. $search_id.'%"';
+    $sql.= ' AND v.rowid LIKE "%'. intval($search_id).'%"';
 }
 if(!empty($search_ref)){
-    $sql.= ' AND v.reference LIKE '.'"%'.$search_ref.'%"';
+    $sql.= ' AND v.reference LIKE '.'"%'.$db->escape($search_ref).'%"';
 }
 if(!empty($search_tarif)){
-    $sql.= ' AND v.tarif LIKE "%'. $search_tarif.'%"';
+    $sql.= ' AND v.tarif LIKE "%'. floatval($search_tarif).'%"';
 }
 if(!empty($search_pays)){
-    $sql.= ' AND v.pays LIKE '.'"%'.$search_pays.'%"';
+    $sql.= ' AND v.pays LIKE '.'"%'.intval($search_pays).'%"';
 }
 if(!empty($search_date_deb)){
     $sql.= ' AND v.date_deb LIKE '.'"%'.$search_date_dConvert->format('Y-m-d').'%"';
@@ -168,9 +171,6 @@ if(!empty($ArraySearch_tag)){
     }
 }
 $sql .= ' GROUP BY v.rowid';
-
-//var_dump($sql);
-
 
 //LIMIT AND OFFSET PAGE
 $i = 0;
@@ -270,19 +270,19 @@ print "\n";
 print_liste_field_titre($langs->trans('Ref'), $_SERVER["PHP_SELF"], 'v.reference', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('price'), $_SERVER["PHP_SELF"], 'v.tarif', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('Price'), $_SERVER["PHP_SELF"], 'v.tarif', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('country'), $_SERVER["PHP_SELF"], 'v.pays', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('Country'), $_SERVER["PHP_SELF"], 'v.pays', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('startDate'), $_SERVER["PHP_SELF"], 'v.date_deb', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('StartDate'), $_SERVER["PHP_SELF"], 'v.date_deb', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('endDate'), $_SERVER["PHP_SELF"], 'v.date_fin', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('EndDate'), $_SERVER["PHP_SELF"], 'v.date_fin', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
-print_liste_field_titre($langs->trans('tag'), $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder);
+print_liste_field_titre($langs->trans('Tag'), $_SERVER["PHP_SELF"], '', '', $param, '', $sortfield, $sortorder);
 print "\n";
 
 print '</tr>';
@@ -296,7 +296,6 @@ print '</tr>';
         $voyage = new Voyage($db);
         $voyage->fetch($obj->rowid);
 
-        //var_dump($obj);exit;
 
         print '<tr>';
 
