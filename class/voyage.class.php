@@ -417,13 +417,18 @@ class Voyage extends SeedObject
     public function setTarifDependsOneTag($rowidVoyage,$tarift)
     {
         global $db;
-        $sql = 'INSERT INTO ' . MAIN_DB_PREFIX.'voyage (tarif) VALUES (\''.$tarift.'\')';
+        $sql = 'UPDATE ' . MAIN_DB_PREFIX.'voyage SET tarif = '.$tarift;
         $sql .=' WHERE rowid='.$rowidVoyage;
         $resql = $db->query($sql);
         
     }
 
-
+    public function setTarifEmptyOrmultiTag($rowidVoyage){
+        global $db;
+        $sql = 'UPDATE ' . MAIN_DB_PREFIX.'voyage SET tarif = 0.01';
+        $sql .=' WHERE rowid='.$rowidVoyage;
+        $resql = $db->query($sql);
+    }
 
 
     public function getOneTagCurrentVoyage($rowidVoyage){
