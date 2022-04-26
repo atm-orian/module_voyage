@@ -428,7 +428,6 @@ else
             */
             $morehtmlref.='</div>';
 
-
             $morehtmlstatus.=''; //$object->getLibStatut(2); // pas besoin fait doublon
 
             $shownav = 1;

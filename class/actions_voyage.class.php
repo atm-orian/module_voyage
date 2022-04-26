@@ -28,67 +28,70 @@
 class Actionsvoyage
 {
     /**
-     * @var DoliDb		Database handler (result of a new DoliDB)
+     * @var DoliDb        Database handler (result of a new DoliDB)
      */
     public $db;
+    /**
+     * @var array Hook results. Propagated to $hookmanager->resArray for later reuse
+     */
+    public $results = array();
+    /**
+     * @var string String displayed by executeHook() immediately after return
+     */
+    public $resprints;
+    /**
+     * @var array Errors
+     */
+    public $errors = array();
 
-	/**
-	 * @var array Hook results. Propagated to $hookmanager->resArray for later reuse
-	 */
-	public $results = array();
+    /**
+     * Constructor
+     * @param DoliDB $db Database connector
+     */
+    public function __construct($db) {
+        $this->db = $db;
+    }
 
-	/**
-	 * @var string String displayed by executeHook() immediately after return
-	 */
-	public $resprints;
+    /**
+     * Overloading the doActions function : replacing the parent's function with the one below
+     *
+     * @param array()         $parameters     Hook metadatas (context, etc...)
+     * @param CommonObject $object The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+     * @param string $action Current action (if set). Generally create or edit or null
+     * @param HookManager $hookmanager Hook manager propagated to allow calling another hook
+     * @return  int                             < 0 on error, 0 on success, 1 to replace standard code
+     */
+    public function doActions($parameters, &$object, &$action, $hookmanager) {
+        $error = 0; // Error counter
+        $myvalue = 'test'; // A result value
 
-	/**
-	 * @var array Errors
-	 */
-	public $errors = array();
+        print_r($parameters);
+        echo "action: " . $action;
+        print_r($object);
 
-	/**
-	 * Constructor
-     * @param DoliDB    $db    Database connector
-	 */
-	public function __construct($db)
-	{
-		$this->db = $db;
-	}
+        if (in_array('somecontext', explode(':', $parameters['context']))) {
+            // do something only for the context 'somecontext'
+        }
 
-	/**
-	 * Overloading the doActions function : replacing the parent's function with the one below
-	 *
-	 * @param   array()         $parameters     Hook metadatas (context, etc...)
-	 * @param   CommonObject    $object        The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
-	 * @param   string          $action        Current action (if set). Generally create or edit or null
-	 * @param   HookManager     $hookmanager    Hook manager propagated to allow calling another hook
-	 * @return  int                             < 0 on error, 0 on success, 1 to replace standard code
-	 */
-	public function doActions($parameters, &$object, &$action, $hookmanager)
-	{
-		$error = 0; // Error counter
-		$myvalue = 'test'; // A result value
+        if (! $error) {
+            $this->results = array('myreturn' => $myvalue);
+            $this->resprints = 'A text to show';
 
-		print_r($parameters);
-		echo "action: " . $action;
-		print_r($object);
+            return 0; // or return 1 to replace standard code
+        } else {
+            $this->errors[] = 'Error message';
 
-		if (in_array('somecontext', explode(':', $parameters['context'])))
-		{
-		  // do something only for the context 'somecontext'
-		}
+            return -1;
+        }
+    }
 
-		if (! $error)
-		{
-			$this->results = array('myreturn' => $myvalue);
-			$this->resprints = 'A text to show';
-			return 0; // or return 1 to replace standard code
-		}
-		else
-		{
-			$this->errors[] = 'Error message';
-			return -1;
-		}
-	}
+    public function addButtonCreateVoyage($parameters, &$object, &$action, $hookmanager){
+
+        global $conf, $db, $langs ;
+        if (in_array('thirdpartycard', explode(':', $parameters['context'])))
+        {
+            print '<a class="butAction" href="'.DOL_URL_ROOT .'/voyage/card.php?action=create&id='.$object->id.'">'.$langs->trans("CreateVoyage").'</a>'."\n";
+        }
+        return 0;
+    }
 }
