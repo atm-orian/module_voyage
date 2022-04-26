@@ -175,8 +175,8 @@ $sql .= ' GROUP BY v.rowid';
 //LIMIT AND OFFSET PAGE
 $i = 0;
 $limit = GETPOST('limit', 'int') ? GETPOST('limit', 'int') : $conf->liste_limit;
-$sortfield = GETPOST('sortfield', 'aZ09comma');
-$sortorder = GETPOST('sortorder', 'aZ09comma');
+$sortfield = GETPOST('sortfield', 'alpha');
+$sortorder = GETPOST('sortorder', 'alpha');
 
 $page = GETPOSTISSET('pageplusone') ? (GETPOST('pageplusone') - 1) : GETPOST("page", 'int');
 if (empty($page) || $page < 0 || GETPOST('button_search', 'alpha') || GETPOST('button_removefilter', 'alpha')) {
@@ -296,6 +296,10 @@ print '</tr>';
         $voyage = new Voyage($db);
         $voyage->fetch($obj->rowid);
 
+        if($voyage->fetch($obj->rowid) <= 0){
+            dol_print_error();
+            exit;
+        }
 
         print '<tr>';
 

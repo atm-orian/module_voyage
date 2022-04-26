@@ -236,7 +236,7 @@ class Voyage extends SeedObject
      */
     public function delete(User &$user, $notrigger = false)
     {
-        $this->deleteVoyage($this->id);
+        $this->deleteVoyageLink($this->id);
         $this->deleteObjectLinked();
 
         unset($this->fk_element); // avoid conflict with standard Dolibarr comportment
@@ -315,6 +315,11 @@ class Voyage extends SeedObject
 
 		$object = new voyage($db);
 		$object->fetch($id, false, $ref);
+
+        if($object->fetch($id, false, $ref) <= 0){
+            dol_print_error();
+            exit;
+        }
 
 		return $object->getNomUrl($withpicto, $moreparams);
     }
@@ -403,6 +408,7 @@ class Voyage extends SeedObject
         while($obj = $db->fetch_object($resql)){
             $ArrayLabelTag[$obj->rowid] = $obj->label;
         }
+
         return $ArrayLabelTag;
     }
 
@@ -410,7 +416,7 @@ class Voyage extends SeedObject
      * @param int $id
      * @return bool
      */
-    public function deleteVoyage($id)
+    public function deleteVoyageLink($id)
     {
         global $db;
         $sql = 'DELETE FROM '. MAIN_DB_PREFIX. 'voyage_link';
@@ -420,7 +426,6 @@ class Voyage extends SeedObject
         if ($resql) return true;
 
         return false;
-
 
     }
 
@@ -440,6 +445,7 @@ class Voyage extends SeedObject
             }
             if ($i==1){ // IF THERE IS ONLY ONE TAG
                 $tarift = $object->findTarifWithOneTag($rowidTag[0]);
+
                 $object->setTarifDependsOneTag($rowidVoyage,$tarift);
             }
 
@@ -529,8 +535,7 @@ class Voyage extends SeedObject
 
     public function getLibStatut($mode = 0)
     {
-//        return self::LibStatut($this->status, $mode);
-		return 'statut';
+//       return self::LibStatut($this->status, $mode);
     }
 }
 

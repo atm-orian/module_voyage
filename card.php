@@ -55,7 +55,13 @@ $backtopage = GETPOST('backtopage', 'alpha');
 
 $object = new voyage($db);
 
-if (!empty($id) || !empty($ref)) $object->fetch($id, true, $ref);
+if (!empty($id) || !empty($ref))
+    $object->fetch($id, true, $ref);
+
+if($object->fetch($id, true, $ref) <= 0){
+    dol_print_error();
+    exit;
+}
 
 $hookmanager->initHooks(array('voyagecard', 'globalcard'));
 
@@ -103,33 +109,19 @@ if (empty($reshook))
 
     $error = 0;
 
-//    var_dump($action);exit;
     $voyage = new Voyage($db);
 
 	switch ($action) {
 		case 'add':
-//			var_dump($_POST);exit;
 
 			$voyage->reference 				= GETPOST('ref');
             if (empty($voyage->reference)) {
-//                var_dump($voyage->reference);
                 setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
                 $action = "create";
                 $error++;
             }
 
-
 			$voyage->tarif 					= GETPOST('tarif','int');
-
-//            var_dump(is_double($voyage->tarif), $voyage->tarif);exit;
-
-//             (!is_double($voyage->tarif))
-//            {
-//                setEventMessages($langs->trans('PriceError'), array(), 'errors');
-//                $action = 'create';
-//                $error++;
-//            }
-
 
 			$voyage->pays 					= GETPOST('pays', 'alpha');
 
@@ -149,23 +141,65 @@ if (empty($reshook))
             }
 
 
-            if ($error > 0)
-            {
-                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?action=create');
-                exit;
+            if (empty($error)){
+                $res = $voyage->save($user);
+
+
+                $rowidVoyage = $voyage->id;
+                $rowidTag = GETPOST('tag','array');
+
+                if(!empty(GETPOST('tag','alpha')))
+                {
+                    foreach ($rowidTag as $valueRowidTag){
+                        $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
+                    }
+                }
+
+                //TARIF
+
+                if (empty($voyage->tarif) && !(empty($rowidTag))){
+                    $voyage->setTarif($rowidVoyage,$rowidTag);
+                }
+                elseif(empty($voyage->tarif) && (empty($rowidTag))){
+                    $voyage->tarif = $conf->global->VOYAGE_TARIF;
+                    $voyage->save($user);
+                }
+
+
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
+                    exit;
             }
-			$res = $voyage->save($user);
+
+			break;
+		case 'update':
+
+            $voyage->setValues($_REQUEST); // Set standard attributes
 
 
             $rowidVoyage = $voyage->id;
             $rowidTag = GETPOST('tag','array');
-//var_dump($rowidTag);exit;
+
             if(!empty(GETPOST('tag','alpha')))
             {
+                $voyage->deleteVoyageLink($rowidVoyage);
+
                 foreach ($rowidTag as $valueRowidTag){
                     $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
                 }
             }
+
+            if ($voyage->isextrafieldmanaged)
+            {
+                $ret = $extrafields->setOptionalsFromPost($extralabels, $voyage);
+                if ($ret < 0) $error++;
+            }
+
+            if (empty($voyage->reference)) {
+                setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
+                $action = "edit";
+                $error++;
+            }
+
 
             //TARIF
 
@@ -177,45 +211,6 @@ if (empty($reshook))
                 $voyage->save($user);
             }
 
-            //var_dump($voyage);exit;
-
-			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
-
-			break;
-		case 'update':
-            //var_dump($_REQUEST);exit;
-
-            $voyage->setValues($_REQUEST); // Set standard attributes
-//            var_dump($_REQUEST);exit;
-
-
-            $rowidVoyage = $voyage->id;
-            $rowidTag = GETPOST('tag','array');
-
-            if(!empty(GETPOST('tag','alpha')))
-            {
-                $voyage->deleteVoyage($rowidVoyage);
-                foreach ($rowidTag as $valueRowidTag){
-                    $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
-
-                }
-            }
-
-            if ($voyage->isextrafieldmanaged)
-            {
-                $ret = $extrafields->setOptionalsFromPost($extralabels, $voyage);
-                if ($ret < 0) $error++;
-            }
-
-            //var_dump(array($object, $voyage));exit;
-            if (empty($voyage->reference)) {
-//                var_dump($voyage->reference);
-                setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
-                $action = "edit";
-                $error++;
-            }
-
-//			$object->date_other = dol_mktime(GETPOST('starthour'), GETPOST('startmin'), 0, GETPOST('startmonth'), GETPOST('startday'), GETPOST('startyear'));
 
 			// Check parameters
 
@@ -226,7 +221,6 @@ if (empty($reshook))
 				break;
 			}
 
-			$res = $voyage->save($user);
             if ($res < 0)
             {
                 setEventMessage($voyage->errors, 'errors');
@@ -283,7 +277,6 @@ if (empty($reshook))
 			exit;
 
 		case 'confirm_delete':
-//			var_dump($object); exit;
 			if (!empty($user->rights->voyage->delete)) {
 				$res = $object->delete($user);
 				if($res <= 0) setEventMessages($object->error, $object->errors, 'errors');
@@ -314,7 +307,6 @@ llxHeader('', $title);
 if ($action == 'create')
 {
 
-//	var_dump($_POST);exit;
     print load_fiche_titre($langs->trans('Newvoyage'), '', 'voyage@voyage');
 
     print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
@@ -330,24 +322,22 @@ if ($action == 'create')
 
 	print '<tr><td class="fieldrequired">'.$langs->trans("Ref").'</td><td><input name="ref" class="minwidth300 maxwidth400onsmartphone" maxlength="255" value="'.dol_escape_htmltag(GETPOST('label', $label_security_check)).'"></td></tr>';
 
-	print '<tr><td >'.$langs->trans("Price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('price', $label_security_check)).'"></td> </tr>';
+	print '<tr><td >'.$langs->trans("Price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('tarif', $label_security_check)).'"></td> </tr>';
 
 	print '<tr><td >'.$langs->trans("Country").'</td><td>';
-    //print '<td> <input name="pays" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('country', $label_security_check)).'"></td> </tr>';
-    print $form->select_country('', 'pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500');
-    //var_dump($form->select_country());exit;
-    //$selected =
-    //(GETPOSTISSET('pays') ? GETPOST('pays') : $voyage->pays)
+
+    print $form->select_country($voyage->pays, 'pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500');
+
     print '</td></tr>';
 
 	// Date de départ
 	print '<tr><td class="">'.$langs->trans('StartDate').'</td><td>';
-	print $form->selectDate('','date_deb','','');
+	print $form->selectDate($voyage->date_deb,'date_deb','','');
 	print '</td></tr>';
 
 	// Date d'arrivée
 	print '<tr><td class="">'.$langs->trans('EndDate').'</td><td>';
-	print $form->selectDate('','date_fin','','');
+	print $form->selectDate($voyage->date_fin,'date_fin','','');
 	print '</td></tr>';
 
 
@@ -458,7 +448,6 @@ else
 
             print '<tr><td > Catégorie </td>';
 
-                //var_dump($id, $voyage);exit;
             print '<td id="product_extras_test_12" class="valuefield product_extras_test wordbreak"><div class="select2-container-multi-dolibarr" style="width: 90%;" ><ul class="select2-choices-dolibarr">';
                 $valueRowidTag = $voyage->getValueRowidTag($id);
                 if (!empty($valueRowidTag)){
@@ -470,7 +459,7 @@ else
                 print '</ul></div></td></tr>';
 
 
- //var_dump($object);exit;
+
 
 
             // Other attributes
