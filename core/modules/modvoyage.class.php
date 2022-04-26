@@ -114,6 +114,7 @@ class modvoyage extends DolibarrModules
 		// );
 		$this->const = array();
 
+
 		// Array to add new pages in new tabs
 		// Example: $this->tabs = array('objecttype:+tabname1:Title1:voyage@voyage:$user->rights->voyage->read:/voyage/mynewtab1.php?id=__ID__',  	// To add a new tab identified by code tabname1
         //                              'objecttype:+tabname2:Title2:voyage@voyage:$user->rights->othermodule->read:/voyage/mynewtab2.php?id=__ID__',  	// To add another new tab identified by code tabname2
@@ -151,15 +152,15 @@ class modvoyage extends DolibarrModules
         if (! isset($conf->voyage->enabled)) $conf->voyage->enabled=0;	// This is to avoid warnings
         $this->dictionaries=array(
             'langs'=>'voyage@voyage',
-            'tabname'=>array(MAIN_DB_PREFIX."table1",MAIN_DB_PREFIX."table2",MAIN_DB_PREFIX."table3"),		// List of tables we want to see into dictonnary editor
-            'tablib'=>array("Table1","Table2","Table3"),													// Label of tables
-            'tabsql'=>array('SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table1 as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table2 as f','SELECT f.rowid as rowid, f.code, f.label, f.active FROM '.MAIN_DB_PREFIX.'table3 as f'),	// Request to select fields
-            'tabsqlsort'=>array("label ASC","label ASC","label ASC"),																					// Sort order
-            'tabfield'=>array("code,label","code,label","code,label"),																					// List of fields (result of select to show dictionary)
-            'tabfieldvalue'=>array("code,label","code,label","code,label"),																				// List of fields (list of fields to edit a record)
-            'tabfieldinsert'=>array("code,label","code,label","code,label"),																			// List of fields (list of fields for insert)
-            'tabrowid'=>array("rowid","rowid","rowid"),																									// Name of columns with primary key (try to always name it 'rowid')
-            'tabcond'=>array($conf->voyage->enabled,$conf->voyage->enabled,$conf->voyage->enabled)												// Condition to show each dictionary
+            'tabname'=>array(MAIN_DB_PREFIX."c_voyage_tag"),		// List of tables we want to see into dictonnary editor
+            'tablib'=>array("Voyage- Catégorie voyage"),			// Label of tables
+            'tabsql'=>array('SELECT vt.rowid as rowid, vt.code as code, vt.label as label,vt.active as active FROM '.MAIN_DB_PREFIX.'c_voyage_tag as vt'),	// Request to select fields
+            'tabsqlsort'=>array("code ASC"),							    						// Sort order
+            'tabfield'=>array("code,label"),														// List of fields (result of select to show dictionary)
+            'tabfieldvalue'=>array("code,label"),													// List of fields (list of fields to edit a record)
+            'tabfieldinsert'=>array("code,label"),													// List of fields (list of fields for insert)
+            'tabrowid'=>array("rowid"),																// Name of columns with primary key (try to always name it 'rowid')
+            'tabcond'=>array($conf->voyage->enabled)												// Condition to show each dictionary
         );
 		/* Example:*/
 
@@ -181,28 +182,28 @@ class modvoyage extends DolibarrModules
 		// $this->rights[$r][4] = 'level1';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		// $this->rights[$r][5] = 'level2';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		// $r++;
-/*
+
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
-		$this->rights[$r][1] = 'voyage_read';	// Permission label
+		$this->rights[$r][1] = 'voyage';	// Permission label
 		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'read';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
 
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
-		$this->rights[$r][1] = 'voyage_write';	// Permission label
+		$this->rights[$r][1] = 'voyage';	// Permission label
 		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'write';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
 
 		$this->rights[$r][0] = $this->numero . $r;	// Permission id (must not be already used)
-		$this->rights[$r][1] = 'voyage_delete';	// Permission label
+		$this->rights[$r][1] = 'voyage';	// Permission label
 		$this->rights[$r][3] = 0; 					// Permission by default for new user (0/1)
 		$this->rights[$r][4] = 'delete';		    // In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
-*/
+/**/
 
 		// Main menu entries
 		$this->menu = array();			// List of menus to add
@@ -219,94 +220,80 @@ class modvoyage extends DolibarrModules
 									'leftmenu'=>'voyage_left',			// This is the name of left menu for the next entries
 									'url'=>'/voyage/list.php',
 									'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>100,
+									'position'=>100+$r,
 									'enabled'=>'$conf->voyage->enabled',	// Define condition to show or hide menu entry. Use '$conf->voyage->enabled' if entry must be visible if module is enabled.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->voyage->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
 									'user'=>0);				                // 0=Menu for internal users, 1=external users, 2=both
 								$r++;
 
-		// Example to declare a Left Menu entry into an existing Top menu entry:
-		 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+
+
+/*			// Example to declare a Left Menu entry into an existing Top menu entry:
+			 $this->menu[$r]=array(	'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
 									'type'=>'left',			                // This is a Left menu entry
-									'titre'=>'voyage left menu',
+									'titre'=>'nouveau voyage',
 									'mainmenu'=>'voyage',
 									'leftmenu'=>'voyage_left',			// Goes into left menu previously created by the mainmenu
-									'url'=>'/voyage/pagelevel2.php',
+									'url'=>'/voyage/card.php',
 									'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-									'position'=>100,
+									'position'=>100 +$r,
 									'enabled'=>'$conf->voyage->enabled',  // Define condition to show or hide menu entry. Use '$conf->voyage->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
 									'perms'=>'1',			                // Use 'perms'=>'$user->rights->voyage->level1->level2' if you want your menu with a permission rules
 									'target'=>'',
 									'user'=>0);				                // 0=Menu for internal users, 1=external users, 2=both
-		 $r++;
-
-/*
-		$this->menu[$r]=array(
-			'fk_menu'=>0,			                // Put 0 if this is a top menu
-			'type'=>'top',			                // This is a Top menu entry
-			'titre'=>$langs->trans('TopMenuvoyage'),
-			'mainmenu'=>'voyage',
-			'leftmenu'=>'',
-			'url'=>'/voyage/list.php',
-			'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>100+$r,
-			'enabled'=>'$conf->voyage->enabled',	// Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled.
-			'perms'=>'$user->rights->voyage->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>0
-		);
-		$r++;
-
-		$this->menu[$r]=array(
-			'fk_menu'=>'fk_mainmenu=voyage',			                // Put 0 if this is a top menu
-			'type'=>'left',			                // This is a Top menu entry
-			'titre'=>$langs->trans('TopMenuvoyage'),
-			'mainmenu'=>'voyage',
-			'leftmenu'=>'voyage_left',
-			'url'=>'/voyage/list.php',
-			'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>100+$r,
-			'enabled'=>'$conf->voyage->enabled',	// Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled.
-			'perms'=>'$user->rights->voyage->read',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>0
-		);
-		$r++;
-
-		$this->menu[$r]=array(
-			'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>$langs->trans('LeftMenuvoyageCreate'),
-			'mainmenu'=>'voyage',
-			'leftmenu'=>'voyage_left_create',
-			'url'=>'/voyage/card.php?action=create',
-			'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>100+$r,
-			'enabled'=> '$conf->voyage->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=> '$user->rights->voyage->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>0
-		);				                // 0=Menu for internal users, 1=external users, 2=both
-		$r++;
-
-
-		$this->menu[$r]=array(
-			'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>$langs->trans('LeftMenuvoyageList'),
-			'mainmenu'=>'voyage',
-			'leftmenu'=>'voyage_left_list',
-			'url'=>'/voyage/list.php',
-			'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>100+$r,
-			'enabled'=> '$conf->voyage->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=> '$user->rights->voyage->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>0
-		);				                // 0=Menu for internal users, 1=external users, 2=both
-		$r++;
+			 $r++;
 */
+			$this->menu[$r]=array(
+                'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+                'type'=>'left',			                // This is a Left menu entry
+                'titre'=>'Liste voyage',
+                'mainmenu'=>'voyage',
+                'leftmenu'=>'voyage_left_list',			// Goes into left menu previously created by the mainmenu
+                'url'=>'/voyage/list.php',
+                'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+                'position'=>100 +$r,
+                'enabled'=>'$conf->voyage->enabled',  // Define condition to show or hide menu entry. Use '$conf->voyage->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+                'perms'=>'1',			                // Use 'perms'=>'$user->rights->voyage->level1->level2' if you want your menu with a permission rules
+                'target'=>'',
+                'user'=>0);				                // 0=Menu for internal users, 1=external users, 2=both
+			$r++;
+
+
+			$this->menu[$r]=array(
+				'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+				'type'=>'left',			                // This is a Left menu entry
+				'titre'=>$langs->trans('LeftMenuvoyageCreate'),
+				'mainmenu'=>'voyage',
+				'leftmenu'=>'voyage_left_create',
+				'url'=>'/voyage/card.php?action=create',
+				'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+				'position'=>100+$r,
+				'enabled'=> '$conf->voyage->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+				'perms'=> '$user->rights->voyage->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
+				'target'=>'',
+				'user'=>0
+			);				                // 0=Menu for internal users, 1=external users, 2=both
+			$r++;
+
+
+        /*
+                    $this->menu[$r]=array(
+                        'fk_menu'=>'fk_mainmenu=voyage,fk_leftmenu=voyage_left',		    // Use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+                        'type'=>'left',			                // This is a Left menu entry
+                        'titre'=>$langs->trans('LeftMenuvoyageList'),
+                        'mainmenu'=>'voyage',
+                        'leftmenu'=>'voyage_left_list',
+                        'url'=>'/voyage/list.php',
+                        'langs'=>'voyage@voyage',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+                        'position'=>100+$r,
+                        'enabled'=> '$conf->voyage->enabled',  // Define condition to show or hide menu entry. Use '$conf->missionorder->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
+                        'perms'=> '$user->rights->voyage->write',			                // Use 'perms'=>'$user->rights->missionorder->level1->level2' if you want your menu with a permission rules
+                        'target'=>'',
+                        'user'=>0
+                    );				                // 0=Menu for internal users, 1=external users, 2=both
+                    $r++;
+            */
 
 		// Exports
 		$r=1;

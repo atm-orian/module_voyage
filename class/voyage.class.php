@@ -25,37 +25,11 @@ if (!class_exists('SeedObject'))
 }
 
 
-class voyage extends SeedObject
+class Voyage extends SeedObject
 {
     /**
      * Canceled status
      */
-    const STATUS_CANCELED = -1;
-    /**
-     * Draft status
-     */
-    const STATUS_DRAFT = 0;
-	/**
-	 * Validated status
-	 */
-	const STATUS_VALIDATED = 1;
-	/**
-	 * Refused status
-	 */
-	const STATUS_REFUSED = 3;
-	/**
-	 * Accepted status
-	 */
-	const STATUS_ACCEPTED = 4;
-
-	/** @var array $TStatus Array of translate key for each const */
-	public static $TStatus = array(
-		self::STATUS_CANCELED => 'voyageStatusShortCanceled'
-		,self::STATUS_DRAFT => 'voyageStatusShortDraft'
-		,self::STATUS_VALIDATED => 'voyageStatusShortValidated'
-//		,self::STATUS_REFUSED => 'voyageStatusShortRefused'
-//		,self::STATUS_ACCEPTED => 'voyageStatusShortAccepted'
-	);
 
 	/** @var string $table_element Table name in SQL */
 	public $table_element = 'voyage';
@@ -64,126 +38,15 @@ class voyage extends SeedObject
 	public $element = 'voyage';
 
 	/** @var int $isextrafieldmanaged Enable the fictionalises of extrafields */
-    public $isextrafieldmanaged = 1;
+    public $isextrafieldmanaged = 0;
 
     /** @var int $ismultientitymanaged 0=No test on entity, 1=Test with field entity, 2=Test with link by societe */
     public $ismultientitymanaged = 1;
 
-    /**
-     *  'type' is the field format.
-     *  'label' the translation key.
-     *  'enabled' is a condition when the field must be managed.
-     *  'visible' says if field is visible in list (Examples: 0=Not visible, 1=Visible on list and create/update/view forms, 2=Visible on list only, 3=Visible on create/update/view form only (not list), 4=Visible on list and update/view form only (not create). Using a negative value means field is not shown by default on list but can be selected for viewing)
-     *  'noteditable' says if field is not editable (1 or 0)
-     *  'notnull' is set to 1 if not null in database. Set to -1 if we must set data to null if empty ('' or 0).
-     *  'default' is a default value for creation (can still be replaced by the global setup of default values)
-     *  'index' if we want an index in database.
-     *  'foreignkey'=>'tablename.field' if the field is a foreign key (it is recommanded to name the field fk_...).
-     *  'position' is the sort order of field.
-     *  'searchall' is 1 if we want to search in this field when making a search from the quick search button.
-     *  'isameasure' must be set to 1 if you want to have a total on list for this field. Field type must be summable like integer or double(24,8).
-     *  'css' is the CSS style to use on field. For example: 'maxwidth200'
-     *  'help' is a string visible as a tooltip on field
-     *  'comment' is not used. You can store here any text of your choice. It is not used by application.
-     *  'showoncombobox' if value of the field must be visible into the label of the combobox that list record
-     *  'arraykeyval' to set list of value if type is a list of predefined values. For example: array("0"=>"Draft","1"=>"Active","-1"=>"Cancel")
-     */
 
-    public $fields = array(
 
-        'ref' => array(
-            'type' => 'varchar(50)',
-            'length' => 50,
-            'label' => 'Ref',
-            'enabled' => 1,
-            'visible' => 1,
-            'notnull' => 1,
-            'showoncombobox' => 1,
-            'index' => 1,
-            'position' => 10,
-            'searchall' => 1,
-            'comment' => 'Reference of object'
-        ),
-
-        'entity' => array(
-            'type' => 'integer',
-            'label' => 'Entity',
-            'enabled' => 1,
-            'visible' => 0,
-            'default' => 1,
-            'notnull' => 1,
-            'index' => 1,
-            'position' => 20
-        ),
-
-        'status' => array(
-            'type' => 'integer',
-            'label' => 'Status',
-            'enabled' => 1,
-            'visible' => 0,
-            'notnull' => 1,
-            'default' => 0,
-            'index' => 1,
-            'position' => 30,
-            'arrayofkeyval' => array(
-                0 => 'Draft',
-                1 => 'Active',
-                -1 => 'Canceled'
-            )
-        ),
-
-        'label' => array(
-            'type' => 'varchar(255)',
-            'label' => 'Label',
-            'enabled' => 1,
-            'visible' => 1,
-            'position' => 40,
-            'searchall' => 1,
-            'css' => 'minwidth200',
-            'help' => 'Help text',
-            'showoncombobox' => 1
-        ),
-
-        'fk_soc' => array(
-            'type' => 'integer:Societe:societe/class/societe.class.php',
-            'label' => 'ThirdParty',
-            'visible' => 1,
-            'enabled' => 1,
-            'position' => 50,
-            'index' => 1,
-            'help' => 'LinkToThirparty'
-        ),
-
-        'description' => array(
-            'type' => 'text', // or html for WYSWYG
-            'label' => 'Description',
-            'enabled' => 1,
-            'visible' => -1, //  un bug sur la version 9.0 de Dolibarr necessite de mettre -1 pour ne pas apparaitre sur les listes au lieu de la valeur 3
-            'position' => 60
-        ),
-
-//        'fk_user_valid' =>array(
-//            'type' => 'integer',
-//            'label' => 'UserValidation',
-//            'enabled' => 1,
-//            'visible' => -1,
-//            'position' => 512
-//        ),
-
-        'import_key' => array(
-            'type' => 'varchar(14)',
-            'label' => 'ImportId',
-            'enabled' => 1,
-            'visible' => -2,
-            'notnull' => -1,
-            'index' => 0,
-            'position' => 1000
-        ),
-
-    );
-
-    /** @var string $ref Object reference */
-	public $ref;
+    /** @var string $reference Object reference */
+	public $reference;
 
     /** @var int $entity Object entity */
 	public $entity;
@@ -199,6 +62,138 @@ class voyage extends SeedObject
 
 
 
+	/** @var string $tarif Object price */
+	public $tarif;
+
+	/** @var string $pays Object country */
+	public $pays;
+
+	/** @var string $date_deb Object startDateAndHour */
+	public $date_deb;
+
+	/** @var string $date_fin Object endDateAndHour */
+	public $date_fin;
+
+	/**
+	 *  'type' is the field format.
+	 *  'label' the translation key.
+	 *  'enabled' is a condition when the field must be managed.
+	 *  'visible' says if field is visible in list (Examples: 0=Not visible, 1=Visible on list and create/update/view forms, 2=Visible on list only, 3=Visible on create/update/view form only (not list), 4=Visible on list and update/view form only (not create). Using a negative value means field is not shown by default on list but can be selected for viewing)
+	 *  'noteditable' says if field is not editable (1 or 0)
+	 *  'notnull' is set to 1 if not null in database. Set to -1 if we must set data to null if empty ('' or 0).
+	 *  'default' is a default value for creation (can still be replaced by the global setup of default values)
+	 *  'index' if we want an index in database.
+	 *  'foreignkey'=>'tablename.field' if the field is a foreign key (it is recommanded to name the field fk_...).
+	 *  'position' is the sort order of field.
+	 *  'searchall' is 1 if we want to search in this field when making a search from the quick search button.
+	 *  'isameasure' must be set to 1 if you want to have a total on list for this field. Field type must be summable like integer or double(24,8).
+	 *  'css' is the CSS style to use on field. For example: 'maxwidth200'
+	 *  'help' is a string visible as a tooltip on field
+	 *  'comment' is not used. You can store here any text of your choice. It is not used by application.
+	 *  'showoncombobox' if value of the field must be visible into the label of the combobox that list record
+	 *  'arraykeyval' to set list of value if type is a list of predefined values. For example: array("0"=>"Draft","1"=>"Active","-1"=>"Cancel")
+	 */
+
+	public $fields = array(
+		'reference' => array(
+			'type' => 'varchar(50)',
+			'length' => 50,
+			'label' => 'Ref',
+			'enabled' => 1,
+			'visible' => 1,
+			'notnull' => 1,
+			'showoncombobox' => 1,
+			'index' => 1,
+			'position' => 10,
+			'searchall' => 1,
+			'comment' => 'Reference of object',
+
+		),
+
+		//objet tarif
+		'tarif' => array(
+			'type' => 'double',
+			'length' => 10,
+			'label' => 'price',
+			'enabled' => 1,
+			'visible' => 1,
+			'notnull' => 0,
+			'index' => 1,
+			'position' => 15
+
+		),
+
+		'pays' => array(
+            'type' => 'integer:Ccountry:core/class/ccountry.class.php',
+            'label' => 'Pays',
+            'length' => 50,
+            'enabled' => 1,
+            'visible' => 1,
+            'notnull' => 0,
+            'position' => 16,
+            'required' => true,
+            'default' => -1
+        ),
+
+		'date_deb' => array(
+			'type' => 'date',
+			'label' => 'Date de départ',
+			'enabled' => 1,
+			'visible' => 1,
+			'notnull' => 0,
+			'position' => 17
+		),
+
+		'date_fin' => array(
+			'type' => 'date',
+			'label' => 'Date d\'arrivée',
+			'enabled' => 1,
+			'visible' => 1,
+			'notnull' => 0,
+			'position' => 18
+		),
+
+		'entity' => array(
+			'type' => 'integer',
+			'label' => 'Entity',
+			'enabled' => 1,
+			'visible' => 0,
+			'default' => 1,
+			'notnull' => 1,
+			'index' => 1,
+			'position' => 20
+		),
+
+//		'fk_soc' => array(
+//			'type' => 'integer:Societe:societe/class/societe.class.php',
+//			'label' => 'ThirdParty',
+//			'visible' => 1,
+//			'enabled' => 1,
+//			'position' => 50,
+//			'index' => 1,
+//			'help' => 'LinkToThirparty'
+//		),
+
+//		'description' => array(
+//			'type' => 'text', // or html for WYSWYG
+//			'label' => 'Description',
+//			'enabled' => 1,
+//			'visible' => -1, //  un bug sur la version 9.0 de Dolibarr necessite de mettre -1 pour ne pas apparaitre sur les listes au lieu de la valeur 3
+//			'position' => 60
+//		),
+
+//
+//		'tms' =>array(
+//			'type'=>'timestamp',
+//			'label'=>'DateModification',
+//			'enabled'=>1,
+//			'visible'=>-1,
+//			'notnull'=>1,
+//			'position'=>85)
+	);
+
+
+
     /**
      * voyage constructor.
      * @param DoliDB    $db    Database connector
@@ -211,7 +206,6 @@ class voyage extends SeedObject
 
 		$this->init();
 
-		$this->status = self::STATUS_DRAFT;
 		$this->entity = $conf->entity;
     }
 
@@ -221,14 +215,9 @@ class voyage extends SeedObject
      */
     public function save($user)
     {
-        if (!empty($this->is_clone))
-        {
-            // TODO determinate if auto generate
-            $this->ref = '(PROV'.$this->id.')';
-        }
-
         return $this->create($user);
     }
+
 
 
     /**
@@ -245,12 +234,13 @@ class voyage extends SeedObject
      * @param User $user User object
      * @return int
      */
-    public function delete(User &$user)
+    public function delete(User &$user, $notrigger = false)
     {
+        $this->deleteVoyage($this->id);
         $this->deleteObjectLinked();
 
         unset($this->fk_element); // avoid conflict with standard Dolibarr comportment
-        return parent::delete($user);
+        parent::delete($user, $notrigger);
     }
 
     /**
@@ -282,94 +272,6 @@ class voyage extends SeedObject
     }
 
 
-    /**
-     * @param User  $user   User object
-     * @return int
-     */
-    public function setDraft($user)
-    {
-        if ($this->status === self::STATUS_VALIDATED)
-        {
-            $this->status = self::STATUS_DRAFT;
-            $this->withChild = false;
-
-            return $this->update($user);
-        }
-
-        return 0;
-    }
-
-    /**
-     * @param User  $user   User object
-     * @return int
-     */
-    public function setValid($user)
-    {
-        if ($this->status === self::STATUS_DRAFT)
-        {
-            // TODO determinate if auto generate
-//            $this->ref = $this->getRef();
-//            $this->fk_user_valid = $user->id;
-            $this->status = self::STATUS_VALIDATED;
-            $this->withChild = false;
-
-            return $this->update($user);
-        }
-
-        return 0;
-    }
-
-    /**
-     * @param User  $user   User object
-     * @return int
-     */
-    public function setAccepted($user)
-    {
-        if ($this->status === self::STATUS_VALIDATED)
-        {
-            $this->status = self::STATUS_ACCEPTED;
-            $this->withChild = false;
-
-            return $this->update($user);
-        }
-
-        return 0;
-    }
-
-    /**
-     * @param User  $user   User object
-     * @return int
-     */
-    public function setRefused($user)
-    {
-        if ($this->status === self::STATUS_VALIDATED)
-        {
-            $this->status = self::STATUS_REFUSED;
-            $this->withChild = false;
-
-            return $this->update($user);
-        }
-
-        return 0;
-    }
-
-    /**
-     * @param User  $user   User object
-     * @return int
-     */
-    public function setReopen($user)
-    {
-        if ($this->status === self::STATUS_ACCEPTED || $this->status === self::STATUS_REFUSED)
-        {
-            $this->status = self::STATUS_VALIDATED;
-            $this->withChild = false;
-
-            return $this->update($user);
-        }
-
-        return 0;
-    }
-
 
     /**
      * @param int    $withpicto     Add picto into link
@@ -389,8 +291,8 @@ class voyage extends SeedObject
 
         $linkend='</a>';
 
-        $picto='generic';
-//        $picto='voyage@voyage';
+//        $picto='generic';
+        $picto='voyage_resized@voyage';
 
         if ($withpicto) $result.=($link.img_object($label, $picto, 'class="classfortooltip"').$linkend);
         if ($withpicto && $withpicto != 2) $result.=' ';
@@ -418,50 +320,69 @@ class voyage extends SeedObject
     }
 
 
-    /**
-     * @param int $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto
-     * @return string
-     */
-    public function getLibStatut($mode = 0)
+    public static function getStaticArrayTag()
     {
-        return self::LibStatut($this->status, $mode);
+        global $db;
+
+        $sql = 'SELECT vt.label, vt.rowid FROM ' . MAIN_DB_PREFIX.'c_voyage_tag vt';
+        $resql = $db->query($sql);
+
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabel[$obj->rowid] = $obj->label;
+        }
+            return $ArrayLabel;
     }
 
-    /**
-     * @param int       $status   Status
-     * @param int       $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto
-     * @return string
-     */
-    public static function LibStatut($status, $mode)
+
+    public static function getStaticArrayPreselectedTag($id)
     {
-		global $langs;
-
-		$langs->load('voyage@voyage');
-        $res = '';
-
-        if ($status==self::STATUS_CANCELED) { $statusType='status9'; $statusLabel=$langs->trans('voyageStatusCancel'); $statusLabelShort=$langs->trans('voyageStatusShortCancel'); }
-        elseif ($status==self::STATUS_DRAFT) { $statusType='status0'; $statusLabel=$langs->trans('voyageStatusDraft'); $statusLabelShort=$langs->trans('voyageStatusShortDraft'); }
-        elseif ($status==self::STATUS_VALIDATED) { $statusType='status1'; $statusLabel=$langs->trans('voyageStatusValidated'); $statusLabelShort=$langs->trans('voyageStatusShortValidate'); }
-        elseif ($status==self::STATUS_REFUSED) { $statusType='status5'; $statusLabel=$langs->trans('voyageStatusRefused'); $statusLabelShort=$langs->trans('voyageStatusShortRefused'); }
-        elseif ($status==self::STATUS_ACCEPTED) { $statusType='status6'; $statusLabel=$langs->trans('voyageStatusAccepted'); $statusLabelShort=$langs->trans('voyageStatusShortAccepted'); }
-
-        if (function_exists('dolGetStatus'))
-        {
-            $res = dolGetStatus($statusLabel, $statusLabelShort, '', $statusType, $mode);
+        global $db;
+        $sql = 'SELECT vt.label, vt.rowid FROM ' . MAIN_DB_PREFIX.'c_voyage_tag vt';
+        $sql .= ' LEFT JOIN ' .MAIN_DB_PREFIX.'voyage_link vl ON (vt.rowid = vl.fk_tag)';
+        $sql .= ' WHERE vl.fk_voyage='.$id;
+        $resql = $db->query($sql);
+        //var_dump($db);
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabel[] = $obj->rowid;
         }
-        else
-        {
-            if ($mode == 0) $res = $statusLabel;
-            elseif ($mode == 1) $res = $statusLabelShort;
-            elseif ($mode == 2) $res = img_picto($statusLabel, $statusType).$statusLabelShort;
-            elseif ($mode == 3) $res = img_picto($statusLabel, $statusType);
-            elseif ($mode == 4) $res = img_picto($statusLabel, $statusType).$statusLabel;
-            elseif ($mode == 5) $res = $statusLabelShort.img_picto($statusLabel, $statusType);
-            elseif ($mode == 6) $res = $statusLabel.img_picto($statusLabel, $statusType);
-        }
-        
-        return $res;
+            return $ArrayLabel;
     }
+
+
+    public function setLabelTag($rowidVoyage, $rowidTag)
+    {
+        global $db;
+
+        $sql = 'INSERT INTO ' . MAIN_DB_PREFIX.'voyage_link (fk_voyage, fk_tag) VALUES (\''.$rowidVoyage.'\',\''.$rowidTag.'\')';
+        $resql = $db->query($sql);
+
+    }
+
+    public function getValueRowidTag($id)
+    {
+        global $db;
+        $ArrayLabelTag= [];
+        $sql = 'SELECT vt.rowid, vt.label FROM ' . MAIN_DB_PREFIX. 'c_voyage_tag vt';
+        $sql .= ' LEFT JOIN ' .MAIN_DB_PREFIX.'voyage_link vl ON (vt.rowid = vl.fk_tag)';
+        $sql .= ' WHERE vl.fk_voyage='.$id;
+        $resql = $db->query($sql);
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabelTag[$obj->rowid] = $obj->label;
+        }
+        return $ArrayLabelTag;
+    }
+
+
+    public function deleteVoyage($id)
+    {
+        global $db;
+        $sql = 'DELETE FROM '. MAIN_DB_PREFIX. 'voyage_link';
+        $sql .= ' WHERE fk_voyage='.$id;
+        $resql = $db->query($sql);
+
+    }
+
+
 }
 
 

@@ -20,6 +20,7 @@ ParamHelp=Le contenu de l'aide
 
 # MENU
 TopMenuvoyage=voyage
+LeftMenuvoyageCreate= Nouveau voyage
 
 # STATUS
 voyageStatusCanceled=Abandonnée (fermée)
@@ -50,6 +51,17 @@ voyageRefuse=Refuser
 voyageReopen=Rouvrir
 voyageCancel=Abandonner
 voyageDelete=Supprimer
+
+label=Libellé
+price=Tarif
+country=Pays
+startDate=Date de départ
+endDate=Date d'arrivée
+tag=Catégorie(s)
+
+# ERROR
+EmptyRef= Champ ref vide
+PriceError = Tarif invalide
 
 ConfirmValidatevoyageTitle=Confirmation d'activation
 ConfirmValidatevoyageBody=Souhaitez-vous vraiment activer cette fiche voyage %s ?

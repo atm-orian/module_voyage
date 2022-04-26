@@ -14,8 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+// Load Dolibarr environment
+$res=0;
+// Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
+if (! $res && ! empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) $res=@include($_SERVER["CONTEXT_DOCUMENT_ROOT"]."/main.inc.php");
+// Try main.inc.php into web root detected using web root caluclated from SCRIPT_FILENAME
+$tmp=empty($_SERVER['SCRIPT_FILENAME'])?'':$_SERVER['SCRIPT_FILENAME'];$tmp2=realpath(__FILE__); $i=strlen($tmp)-1; $j=strlen($tmp2)-1;
+while($i > 0 && $j > 0 && isset($tmp[$i]) && isset($tmp2[$j]) && $tmp[$i]==$tmp2[$j]) { $i--; $j--; }
+if (! $res && $i > 0 && file_exists(substr($tmp, 0, ($i+1))."/main.inc.php")) $res=@include(substr($tmp, 0, ($i+1))."/main.inc.php");
+if (! $res && $i > 0 && file_exists(dirname(substr($tmp, 0, ($i+1)))."/main.inc.php")) $res=@include(dirname(substr($tmp, 0, ($i+1)))."/main.inc.php");
+// Try main.inc.php using relative path
+if (! $res && file_exists("../main.inc.php")) $res=@include("../main.inc.php");
+if (! $res && file_exists("../../main.inc.php")) $res=@include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res=@include("../../../main.inc.php");
+if (! $res) die("Include of main fails");
 
-require 'config.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 dol_include_once('voyage/class/voyage.class.php');
@@ -28,6 +41,14 @@ $langs->load('voyage@voyage');
 $action = GETPOST('action');
 $id = GETPOST('id', 'int');
 $ref = GETPOST('ref');
+$cancel = GETPOST('cancel', 'alpha');
+$ArrayLabel = Voyage::getStaticArrayTag();
+
+if($id){
+    $ArrayLabelPreselected = Voyage::getStaticArrayPreselectedTag($id);
+}
+
+
 
 $contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'voyagecard';   // To manage different context of search
 $backtopage = GETPOST('backtopage', 'alpha');
@@ -80,50 +101,137 @@ if (empty($reshook))
     // For object linked
     include DOL_DOCUMENT_ROOT.'/core/actions_dellink.inc.php';		// Must be include, not include_once
 
-
-
-
     $error = 0;
+
+//    var_dump($action);exit;
+    $voyage = new Voyage($db);
+
 	switch ($action) {
 		case 'add':
-		case 'update':
-			$object->setValues($_REQUEST); // Set standard attributes
+//			var_dump($_POST);exit;
 
-            if ($object->isextrafieldmanaged)
+
+			$voyage->reference 				= GETPOST('ref');
+            if (empty($voyage->reference)) {
+//                var_dump($voyage->reference);
+                setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
+                $action = "create";
+                $error++;
+            }
+
+
+			$voyage->tarif 					= GETPOST('tarif','int');
+
+//            var_dump(is_double($voyage->tarif), $voyage->tarif);exit;
+
+//             (!is_double($voyage->tarif))
+//            {
+//                setEventMessages($langs->trans('PriceError'), array(), 'errors');
+//                $action = 'create';
+//                $error++;
+//            }
+
+
+			$voyage->pays 					= GETPOST('pays', 'alpha');
+
+			$date_d = GETPOST('date_deb');
+            if(!empty($date_d)){
+                $date_dConvert = DateTime::createFromFormat('d/m/Y', $date_d);
+                $voyage->date_deb				= $date_dConvert->format('Y-m-d');
+            }
+
+
+
+
+			$date_f = GETPOST('date_fin');
+            if(!empty($date_f)){
+                $date_fConvert= DateTime::createFromFormat('d/m/Y',$date_f);
+                $voyage->date_fin				= $date_fConvert->format('Y-m-d');
+            }
+
+
+            if ($error > 0)
             {
-                $ret = $extrafields->setOptionalsFromPost($extralabels, $object);
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?action=create');
+                exit;
+            }
+			$res = $voyage->save($user);
+
+
+            $rowidVoyage = $voyage->id;
+            $rowidTag = GETPOST('tag','array');
+
+            if(!empty(GETPOST('tag','alpha')))
+            {
+                foreach ($rowidTag as $valueRowidTag){
+                    $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
+                }
+            }
+
+
+
+            //var_dump($voyage);exit;
+
+			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
+
+			break;
+		case 'update':
+            //var_dump($_REQUEST);exit;
+
+            $voyage->setValues($_REQUEST); // Set standard attributes
+//            var_dump($_REQUEST);exit;
+
+
+            $rowidVoyage = $voyage->id;
+            $rowidTag = GETPOST('tag','array');
+
+            if(!empty(GETPOST('tag','alpha')))
+            {
+                $voyage->deleteVoyage($rowidVoyage);
+                foreach ($rowidTag as $valueRowidTag){
+                    $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
+
+                }
+            }
+
+            if ($voyage->isextrafieldmanaged)
+            {
+                $ret = $extrafields->setOptionalsFromPost($extralabels, $voyage);
                 if ($ret < 0) $error++;
+            }
+
+            //var_dump(array($object, $voyage));exit;
+            if (empty($voyage->reference)) {
+//                var_dump($voyage->reference);
+                setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
+                $action = "edit";
+                $error++;
             }
 
 //			$object->date_other = dol_mktime(GETPOST('starthour'), GETPOST('startmin'), 0, GETPOST('startmonth'), GETPOST('startday'), GETPOST('startyear'));
 
 			// Check parameters
-//			if (empty($object->date_other))
-//			{
-//				$error++;
-//				setEventMessages($langs->trans('warning_date_must_be_fill'), array(), 'warnings');
-//			}
 
 			// ...
-
 			if ($error > 0)
 			{
 				$action = 'edit';
 				break;
 			}
 
-			$res = $object->save($user);
+			$res = $voyage->save($user);
             if ($res < 0)
             {
-                setEventMessage($object->errors, 'errors');
-                if (empty($object->id)) $action = 'create';
+                setEventMessage($voyage->errors, 'errors');
+                if (empty($voyage->id)) $action = 'create';
                 else $action = 'edit';
             }
             else
             {
-                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
                 exit;
             }
+
         case 'update_extras':
 
             $object->oldcopy = dol_clone($object);
@@ -163,11 +271,16 @@ if (empty($reshook))
 		case 'confirm_validate':
 			if (!empty($user->rights->voyage->write)) $object->setValid($user);
 
+
 			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
 			exit;
 
 		case 'confirm_delete':
-			if (!empty($user->rights->voyage->delete)) $object->delete($user);
+//			var_dump($object); exit;
+			if (!empty($user->rights->voyage->delete)) {
+				$res = $object->delete($user);
+				if($res <= 0) setEventMessages($object->error, $object->errors, 'errors');
+			}
 
 			header('Location: '.dol_buildpath('/voyage/list.php', 1));
 			exit;
@@ -185,6 +298,7 @@ if (empty($reshook))
 /**
  * View
  */
+
 $form = new Form($db);
 
 $title=$langs->trans('voyage');
@@ -192,6 +306,8 @@ llxHeader('', $title);
 
 if ($action == 'create')
 {
+
+//	var_dump($_POST);exit;
     print load_fiche_titre($langs->trans('Newvoyage'), '', 'voyage@voyage');
 
     print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
@@ -204,11 +320,39 @@ if ($action == 'create')
     print '<table class="border centpercent">'."\n";
 
     // Common attributes
-    include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_add.tpl.php';
 
-    // Other attributes
-    include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_add.tpl.php';
+	print '<tr><td class="fieldrequired">'.$langs->trans("Ref").'</td><td><input name="ref" class="minwidth300 maxwidth400onsmartphone" maxlength="255" value="'.dol_escape_htmltag(GETPOST('label', $label_security_check)).'"></td></tr>';
 
+	print '<tr><td >'.$langs->trans("price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('price', $label_security_check)).'"></td> </tr>';
+
+	print '<tr><td >'.$langs->trans("country").'</td><td>';
+    //print '<td> <input name="pays" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('country', $label_security_check)).'"></td> </tr>';
+    print $form->select_country('', 'pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500');
+    //var_dump($form->select_country());exit;
+    //$selected =
+    //(GETPOSTISSET('pays') ? GETPOST('pays') : $voyage->pays)
+    print '</td></tr>';
+
+	// Date de départ
+	print '<tr><td class="">'.$langs->trans('startDate').'</td><td>';
+	print $form->selectDate('','date_deb','','');
+	print '</td></tr>';
+
+	// Date d'arrivée
+	print '<tr><td class="">'.$langs->trans('endDate').'</td><td>';
+	print $form->selectDate('','date_fin','','');
+	print '</td></tr>';
+
+
+    print '<tr><td class="">'.$langs->trans('tag').'</td><td>';
+
+    print Form::multiselectarray('tag',$ArrayLabel, GETPOST('tag', 'array'));
+
+    print '</td></tr>';
+
+
+
+	// Other attributes
     print '</table>'."\n";
 
     dol_fiche_end();
@@ -247,6 +391,11 @@ else
             // Common attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_edit.tpl.php';
 
+            print '<tr><td > Catégorie </td>';
+
+            print '<td>'.Form::multiselectarray('tag',$ArrayLabel, $ArrayLabelPreselected).'</td>';
+            print '</tr>';
+
             // Other attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_edit.tpl.php';
 
@@ -284,7 +433,10 @@ else
 
 
             $morehtmlstatus.=''; //$object->getLibStatut(2); // pas besoin fait doublon
-            dol_banner_tab($object, 'ref', $linkback, 1, 'ref', 'ref', $morehtmlref, '', 0, '', $morehtmlstatus);
+
+            $shownav = 1;
+
+            dol_banner_tab($object, '', $linkback, $shownav, '');
 
             print '<div class="fichecenter">';
 
@@ -294,7 +446,25 @@ else
 
             // Common attributes
             //$keyforbreak='fieldkeytoswithonsecondcolumn';
+
             include DOL_DOCUMENT_ROOT . '/core/tpl/commonfields_view.tpl.php';
+
+            print '<tr><td > Catégorie </td>';
+
+                //var_dump($id, $voyage);exit;
+            print '<td id="product_extras_test_12" class="valuefield product_extras_test wordbreak"><div class="select2-container-multi-dolibarr" style="width: 90%;" ><ul class="select2-choices-dolibarr">';
+                $valueRowidTag = $voyage->getValueRowidTag($id);
+                if (!empty($valueRowidTag)){
+                    foreach ($valueRowidTag as $row){
+                        print '<li class="select2-search-choice-dolibarr noborderoncategories" style="background: #bbb">'.$row. '</li>';
+                    }
+                }
+
+                print '</ul></div></td></tr>';
+
+
+ //var_dump($object);exit;
+
 
             // Other attributes
             include DOL_DOCUMENT_ROOT . '/core/tpl/extrafields_view.tpl.php';
@@ -317,53 +487,53 @@ else
                 //        print '<a class="butAction" href="' . $_SERVER["PHP_SELF"] . '?id=' . $object->id . '&action=presend&mode=init#formmailbeforetitle">' . $langs->trans('SendMail') . '</a>'."\n";
 
                 // Modify
-                if (!empty($user->rights->voyage->write))
-                {
-                    if ($object->status !== voyage::STATUS_CANCELED)
-                    {
-                        // Modify
-                        if ($object->status !== voyage::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=edit">'.$langs->trans("voyageModify").'</a></div>'."\n";
-                        // Clone
-                        print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
-                    }
-
-                    // Valid
-                    if ($object->status === voyage::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('voyageValid').'</a></div>'."\n";
-
-                    // Accept
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=accept">'.$langs->trans('voyageAccept').'</a></div>'."\n";
-                    // Refuse
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=refuse">'.$langs->trans('voyageRefuse').'</a></div>'."\n";
-
-
-                    // Reopen
-                    if ($object->status === voyage::STATUS_ACCEPTED || $object->status === voyage::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('voyageReopen').'</a></div>'."\n";
-                    // Cancel
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=cancel">'.$langs->trans("voyageCancel").'</a></div>'."\n";
-                }
-                else
-                {
-                    if ($object->status !== voyage::STATUS_CANCELED)
-                    {
-                        // Modify
-                        if ($object->status !== voyage::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageModify").'</a></div>'."\n";
-                        // Clone
-                        print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageClone").'</a></div>'."\n";
-                    }
-
-                    // Valid
-                    if ($object->status === voyage::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('voyageValid').'</a></div>'."\n";
-
-                    // Accept
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('voyageAccept').'</a></div>'."\n";
-                    // Refuse
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('voyageRefuse').'</a></div>'."\n";
-
-                    // Reopen
-                    if ($object->status === voyage::STATUS_ACCEPTED || $object->status === voyage::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('voyageReopen').'</a></div>'."\n";
-                    // Cancel
-                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageCancel").'</a></div>'."\n";
-                }
+//                if (!empty($user->rights->voyage->write))
+//                {
+//                    if ($object->status !== voyage::STATUS_CANCELED)
+//                    {
+//                        // Modify
+//                        if ($object->status !== voyage::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=edit">'.$langs->trans("voyageModify").'</a></div>'."\n";
+//                        // Clone
+//                        print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
+//                    }
+//
+//                    // Valid
+//                    if ($object->status === voyage::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=valid">'.$langs->trans('voyageValid').'</a></div>'."\n";
+//
+//                    // Accept
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=accept">'.$langs->trans('voyageAccept').'</a></div>'."\n";
+//                    // Refuse
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=refuse">'.$langs->trans('voyageRefuse').'</a></div>'."\n";
+//
+//
+//                    // Reopen
+//                    if ($object->status === voyage::STATUS_ACCEPTED || $object->status === voyage::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=reopen">'.$langs->trans('voyageReopen').'</a></div>'."\n";
+//                    // Cancel
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=cancel">'.$langs->trans("voyageCancel").'</a></div>'."\n";
+//                }
+//                else
+//                {
+//                    if ($object->status !== voyage::STATUS_CANCELED)
+//                    {
+//                        // Modify
+//                        if ($object->status !== voyage::STATUS_ACCEPTED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageModify").'</a></div>'."\n";
+//                        // Clone
+//                        print '<div class="inline-block divButAction"><a class="butAction" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageClone").'</a></div>'."\n";
+//                    }
+//
+//                    // Valid
+//                    if ($object->status === voyage::STATUS_DRAFT) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('voyageValid').'</a></div>'."\n";
+//
+//                    // Accept
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('voyageAccept').'</a></div>'."\n";
+//                    // Refuse
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#">'.$langs->trans('voyageRefuse').'</a></div>'."\n";
+//
+//                    // Reopen
+//                    if ($object->status === voyage::STATUS_ACCEPTED || $object->status === voyage::STATUS_REFUSED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans('voyageReopen').'</a></div>'."\n";
+//                    // Cancel
+//                    if ($object->status === voyage::STATUS_VALIDATED) print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageCancel").'</a></div>'."\n";
+//                }
 
                 if (!empty($user->rights->voyage->delete))
                 {
@@ -373,6 +543,9 @@ else
                 {
                     print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageDelete").'</a></div>'."\n";
                 }
+				if ($user->rights->societe->creer) {
+					print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit">'.$langs->trans("Modify").'</a>'."\n";
+				}
             }
             print '</div>'."\n";
 
