@@ -65,9 +65,7 @@ class Actionsvoyage
         $error = 0; // Error counter
         $myvalue = 'test'; // A result value
 
-        print_r($parameters);
         echo "action: " . $action;
-        print_r($object);
 
         if (in_array('somecontext', explode(':', $parameters['context']))) {
             // do something only for the context 'somecontext'
@@ -85,13 +83,15 @@ class Actionsvoyage
         }
     }
 
-    public function addButtonCreateVoyage($parameters, &$object, &$action, $hookmanager){
+    public function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager){
 
         global $conf, $db, $langs ;
-        if (in_array('thirdpartycard', explode(':', $parameters['context'])))
+
+        if (in_array('productcard', explode(':', $parameters['context'])))
         {
-            print '<a class="butAction" href="'.DOL_URL_ROOT .'/voyage/card.php?action=create&id='.$object->id.'">'.$langs->trans("CreateVoyage").'</a>'."\n";
+            print '<a class="butAction" href="'.DOL_URL_ROOT .'/custom/voyage/card.php?action=create&idProduct='.$object->id.'">'.$langs->trans("CreateVoyage").'</a>'."\n";
         }
+
         return 0;
     }
 }

@@ -528,26 +528,14 @@ class Voyage extends SeedObject
             return $obj->label;
     }
 
-    public function insertProductLinkVoyage($rowidProduct,$rowidVoyage){
-        global $db;
-        $sql = 'INSERT INTO ' . MAIN_DB_PREFIX.'element_element (fk_source, sourcetype, fk_target, targettype) VALUES (\''.$rowidProduct.'\',\'product\',\''.$rowidVoyage.'\',\'voyage\')';
-//        var_dump($sql);exit;
-        $resql = $db->query($sql);
 
-        if ($resql) return true;
-
-        return false;
-    }
-
-    /**
-     * @param int $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto
-     * @return string
-     */
-
+<<<<<<< HEAD
     public function getLibStatut($mode = 0)
     {
 //       return self::LibStatut($this->status, $mode);
     }
+=======
+>>>>>>> 2ef63425e6b48cf9fedc39d8966a2af0729573c9
 }
 
 
