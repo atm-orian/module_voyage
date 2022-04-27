@@ -144,6 +144,10 @@ class Interfacevoyagetrigger extends DolibarrTriggers
 			return call_user_func($callback, $action, $object, $user, $langs, $conf);
 		};
 
+        if ($action == 'PRODUCT_DELETE'){
+
+        }
+
         // Users
 //        if ($action == 'USER_LOGIN') {
 //            dol_syslog(
