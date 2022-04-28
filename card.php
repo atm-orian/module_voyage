@@ -157,6 +157,8 @@ if (empty($reshook))
                     }
                 }
 
+                $voyage->save($user);
+
                 //TARIF
 
                 if (empty($voyage->tarif) && !(empty($rowidTag))){
@@ -164,11 +166,9 @@ if (empty($reshook))
                 }
                 elseif(empty($voyage->tarif) && (empty($rowidTag))){
                     $voyage->tarif = $conf->global->VOYAGE_TARIF;
-                    $voyage->save($user);
                 }
 
                 if(!empty($idProduct)){
-                    //var_dump($idProduct,$voyage->id);exit;
                     $voyage->insertProductLinkVoyage($idProduct,$voyage->id);
                 }
 
@@ -207,6 +207,7 @@ if (empty($reshook))
                 $error++;
             }
 
+            $res= $voyage->save($user);
 
             //TARIF
 
@@ -217,7 +218,7 @@ if (empty($reshook))
                 $voyage->tarif = $conf->global->VOYAGE_TARIF;
 
             }
-           $res= $voyage->save($user);
+
             if($res < 0){
                 $error ++;
             }
