@@ -163,6 +163,9 @@ class Interfacevoyagetrigger extends DolibarrTriggers
 
                while($obj = $db->fetch_object($reselect)){
                    if(!empty($obj->fk_target)){
+                       $deleteElement = "DELETE FROM ".MAIN_DB_PREFIX."element_element WHERE fk_target=".$obj->fk_target;
+                       $db->query($deleteElement);
+
                        $deleteLink = "DELETE FROM ".MAIN_DB_PREFIX."voyage_link WHERE fk_voyage=".$obj->fk_target;
                        $db->query($deleteLink);
 
