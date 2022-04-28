@@ -55,12 +55,11 @@ $backtopage = GETPOST('backtopage', 'alpha');
 
 $object = new voyage($db);
 
-if (!empty($id) || !empty($ref))
-    $object->fetch($id, true, $ref);
-
-if($object->fetch($id, true, $ref) <= 0){
-    dol_print_error();
-    exit;
+if (!empty($id) ){
+    if($object->fetch($id, true) <= 0){
+        dol_print_error($db);
+        exit;
+    }
 }
 
 $hookmanager->initHooks(array('voyagecard', 'globalcard'));
@@ -148,12 +147,14 @@ if (empty($reshook))
                 $rowidVoyage = $voyage->id;
                 $rowidTag = GETPOST('tag','array');
 
-                if(!empty(GETPOST('tag','alpha')))
+                if(!empty($rowidTag))
                 {
                     foreach ($rowidTag as $valueRowidTag){
                         $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
                     }
                 }
+
+                $voyage->save($user);
 
                 //TARIF
 
@@ -162,7 +163,6 @@ if (empty($reshook))
                 }
                 elseif(empty($voyage->tarif) && (empty($rowidTag))){
                     $voyage->tarif = $conf->global->VOYAGE_TARIF;
-                    $voyage->save($user);
                 }
 
 
@@ -200,6 +200,7 @@ if (empty($reshook))
                 $error++;
             }
 
+            $res= $voyage->save($user);
 
             //TARIF
 
@@ -208,9 +209,12 @@ if (empty($reshook))
             }
             elseif(empty($voyage->tarif) && (empty($rowidTag))){
                 $voyage->tarif = $conf->global->VOYAGE_TARIF;
-                $voyage->save($user);
+
             }
 
+            if($res < 0){
+                $error ++;
+            }
 
 			// Check parameters
 
@@ -331,17 +335,17 @@ if ($action == 'create')
     print '</td></tr>';
 
 	// Date de départ
-	print '<tr><td class="">'.$langs->trans('StartDate').'</td><td>';
+	print '<tr><td class="date_deb">'.$langs->trans('StartDate').'</td><td>';
 	print $form->selectDate($voyage->date_deb,'date_deb','','');
 	print '</td></tr>';
 
 	// Date d'arrivée
-	print '<tr><td class="">'.$langs->trans('EndDate').'</td><td>';
+	print '<tr><td class="date_fin">'.$langs->trans('EndDate').'</td><td>';
 	print $form->selectDate($voyage->date_fin,'date_fin','','');
 	print '</td></tr>';
 
 
-    print '<tr><td class="">'.$langs->trans('Tag').'</td><td>';
+    print '<tr><td class="tag">'.$langs->trans('Tag').'</td><td>';
 
     print Form::multiselectarray('tag',$ArrayLabel, GETPOST('tag', 'array'));
 
@@ -427,7 +431,6 @@ else
             $morehtmlref.='<br>'.$langs->trans('ThirdParty') . ' : ' . $soc->getNomUrl(1);
             */
             $morehtmlref.='</div>';
-
 
             $morehtmlstatus.=''; //$object->getLibStatut(2); // pas besoin fait doublon
 
