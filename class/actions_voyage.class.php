@@ -65,8 +65,6 @@ class Actionsvoyage
         $error = 0; // Error counter
         $myvalue = 'test'; // A result value
 
-        echo "action: " . $action;
-
         if (in_array('somecontext', explode(':', $parameters['context']))) {
             // do something only for the context 'somecontext'
         }
@@ -87,7 +85,7 @@ class Actionsvoyage
 
         global $conf, $db, $langs ;
 
-        if (in_array('productcard', explode(':', $parameters['context'])))
+        if (in_array('productcard', explode(':', $parameters['context'])) && $object->type == Product::TYPE_PRODUCT )
         {
             print '<a class="butAction" href="'.DOL_URL_ROOT .'/custom/voyage/card.php?action=create&idProduct='.$object->id.'">'.$langs->trans("CreateVoyage").'</a>'."\n";
         }
