@@ -32,7 +32,7 @@ global $db,$user;
 $langs = $GLOBALS['langs'];
 $linkedObjectBlock = $GLOBALS['linkedObjectBlock'];
 
-$langs->load("voyage@voyage");
+$langs->load("voyage_resized@voyage");
 echo '<br>';
 print load_fiche_titre($langs->trans("voyageRelated"));
 ?>

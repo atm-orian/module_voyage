@@ -66,17 +66,6 @@ if (!empty($id) || !empty($ref))
 //}
 
 
-//$hookmanager=new HookManager($db);
-//$hookmanager->initHooks(array('voyagecard', 'globalcard'));
-
-//$parameters=array();
-//$reshook=$hookmanager->executeHooks('addButtonCreateVoyage',$parameters,$object,$action); // See description below
-// Note that $action and $object may have been modified by hook
-//if (empty($reshook))
-//{
-//    ... // standard code that can be disabled/replaced by hook if return code > 0.
-//}
-
 
 if ($object->isextrafieldmanaged)
 {
@@ -146,8 +135,6 @@ if (empty($reshook))
             }
 
 
-
-
 			$date_f = GETPOST('date_fin');
             if(!empty($date_f)){
                 $date_fConvert= DateTime::createFromFormat('d/m/Y',$date_f);
@@ -194,6 +181,7 @@ if (empty($reshook))
 
             $voyage->setValues($_REQUEST); // Set standard attributes
 
+            //var_dump($_REQUEST);exit;
 
             $rowidVoyage = $voyage->id;
             $rowidTag = GETPOST('tag','array');
@@ -227,9 +215,12 @@ if (empty($reshook))
             }
             elseif(empty($voyage->tarif) && (empty($rowidTag))){
                 $voyage->tarif = $conf->global->VOYAGE_TARIF;
-                $voyage->save($user);
-            }
 
+            }
+           $res= $voyage->save($user);
+            if($res < 0){
+                $error ++;
+            }
 
 			// Check parameters
 

@@ -90,7 +90,7 @@ class modvoyage extends DolibarrModules
 		//                        );
 		$this->module_parts = array(
             'hooks' => array('productcard'),
-            array('triggers'=>1 )
+            'triggers' => 1,
         );
 
 		// Data directories to create when module is enabled.

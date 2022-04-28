@@ -53,7 +53,7 @@ class Interfacevoyagetrigger extends DolibarrTriggers
             . "They are provided for tutorial purpose only.";
         // 'development', 'experimental', 'dolibarr' or version
         $this->version = 'development';
-        $this->picto = 'voyage@voyage';
+        $this->picto = 'voyage_resized@voyage';
     }
 
     /**
@@ -134,6 +134,8 @@ class Interfacevoyagetrigger extends DolibarrTriggers
         // Put here code you want to execute when a Dolibarr business events occurs.
         // Data and type of action are stored into $object and $action
 
+        global $conf, $db;
+
 		$methodName = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', strtolower($action)))));
 		$callback = array($this, $methodName);
 		if(is_callable($callback)){
@@ -145,6 +147,35 @@ class Interfacevoyagetrigger extends DolibarrTriggers
 		};
 
         if ($action == 'PRODUCT_DELETE'){
+
+
+                $select = "SELECT fk_target FROM ". MAIN_DB_PREFIX. "element_element WHERE fk_source=".$object->id;
+                $reselect = $db->query($select);
+
+
+
+                if(!$reselect){
+                    dol_print_error($db);
+                    exit;
+                }
+
+
+
+               while($obj = $db->fetch_object($reselect)){
+                   if(!empty($obj->fk_target)){
+                       $deleteLink = "DELETE FROM ".MAIN_DB_PREFIX."voyage_link WHERE fk_voyage=".$obj->fk_target;
+                       $db->query($deleteLink);
+
+                       $deleteVoyage="DELETE FROM ".MAIN_DB_PREFIX."voyage WHERE rowid=".$obj->fk_target;
+                       $db->query($deleteVoyage);
+                   }
+               }
+
+
+
+
+
+
 
         }
 
