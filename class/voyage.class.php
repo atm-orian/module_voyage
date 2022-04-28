@@ -317,7 +317,7 @@ class Voyage extends SeedObject
 		$object->fetch($id, false, $ref);
 
         if($object->fetch($id, false, $ref) <= 0){
-            dol_print_error();
+            dol_print_error($db);
             exit;
         }
 
@@ -531,7 +531,7 @@ class Voyage extends SeedObject
     public function insertProductLinkVoyage($rowidProduct,$rowidVoyage){
         global $db;
         $sql = 'INSERT INTO ' . MAIN_DB_PREFIX.'element_element (fk_source, sourcetype, fk_target, targettype) VALUES (\''.$rowidProduct.'\',\'product\',\''.$rowidVoyage.'\',\'voyage\')';
-//        var_dump($sql);exit;
+
         $resql = $db->query($sql);
 
         if ($resql) return true;
