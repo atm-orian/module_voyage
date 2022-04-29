@@ -152,14 +152,10 @@ class Interfacevoyagetrigger extends DolibarrTriggers
                 $select = "SELECT fk_target FROM ". MAIN_DB_PREFIX. "element_element WHERE fk_source=".$object->id;
                 $reselect = $db->query($select);
 
-
-
                 if(!$reselect){
                     dol_print_error($db);
                     exit;
                 }
-
-
 
                while($obj = $db->fetch_object($reselect)){
                    if(!empty($obj->fk_target)){
@@ -173,12 +169,6 @@ class Interfacevoyagetrigger extends DolibarrTriggers
                        $db->query($deleteVoyage);
                    }
                }
-
-
-
-
-
-
 
         }
 

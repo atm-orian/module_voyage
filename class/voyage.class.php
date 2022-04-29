@@ -528,6 +528,11 @@ class Voyage extends SeedObject
             return $obj->label;
     }
 
+    /**
+     * @param int $rowidProduct
+     * @param int $rowidVoyage
+     * @return bool
+     */
     public function insertProductLinkVoyage($rowidProduct,$rowidVoyage){
         global $db;
         $sql = 'INSERT INTO ' . MAIN_DB_PREFIX.'element_element (fk_source, sourcetype, fk_target, targettype) VALUES (\''.$rowidProduct.'\',\'product\',\''.$rowidVoyage.'\',\'voyage\')';
