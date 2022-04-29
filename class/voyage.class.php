@@ -325,7 +325,7 @@ class Voyage extends SeedObject
     }
 
     /**
-     * @return array|void
+     * @return array|int
      */
     public static function getStaticArrayTag()
     {
@@ -346,7 +346,7 @@ class Voyage extends SeedObject
 
     /**
      * @param int $id
-     * @return array|void
+     * @return array|int
      */
     public static function getStaticArrayPreselectedTag($id)
     {
@@ -387,7 +387,7 @@ class Voyage extends SeedObject
 
     /**
      * @param int $id
-     * @return array|void
+     * @return array|int
      */
     public function getValueRowidTag($id)
     {
@@ -430,9 +430,9 @@ class Voyage extends SeedObject
      *  Cette fonction permet de mettre un tarif par défault à un voyage en fonction des catégories qui lui sont associés
      * Si il n'y a qu'une seule catégorie alors le tarif sera celui qui lui est associé
      * si il il y a plusieurs catégories alors le tarif sera le tarif le plus petit parmi toutes les catégories associées
-     * @param $rowidVoyage
-     * @param $TRowidTags
-     * @return int|void
+     * @param int $rowidVoyage
+     * @param array $TRowidTags
+     * @return int
      */
     public function setTarif($rowidVoyage,$TRowidTags)
     {
@@ -476,7 +476,7 @@ class Voyage extends SeedObject
 
     /**
      * Cette fonction permet de trouver le tarif associé à une catégorie
-     * @param $valueRowidTag
+     * @param int $valueRowidTag
      * @return double
      */
     public function findTarifWithOneTag($valueRowidTag)
@@ -498,6 +498,7 @@ class Voyage extends SeedObject
     /**
      * Cette fonction permet d'enregistrer un tarif sur un voyage souhaité
      * dans notre cas le tarif sera celui associé à un tag recherché, ce tarif sera récupéré via la fonction findTarifWithOneTag()
+     * @param int $rowidVoyage
      * @param double $tarift
      * @return bool
      */
