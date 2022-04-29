@@ -385,6 +385,8 @@ class Voyage extends SeedObject
 
     }
 
+
+
     /**
      * @param int $id
      * @return array|int

@@ -152,18 +152,21 @@ if (empty($reshook))
                     foreach ($rowidTag as $valueRowidTag){
                         $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
                     }
-                }
+                }else $voyage->deleteVoyageLink($rowidVoyage);
 
-                $voyage->save($user);
 
                 //TARIF
 
+                //IF TARIF EMPTY AND TAG EMPTY
                 if (empty($voyage->tarif) && !(empty($rowidTag))){
                     $voyage->setTarif($rowidVoyage,$rowidTag);
                 }
+                // IF TARIF EMPTY AND TAG FILLED
                 elseif(empty($voyage->tarif) && (empty($rowidTag))){
                     $voyage->tarif = $conf->global->VOYAGE_TARIF;
                 }
+                $voyage->save($user);
+
 
 
                 header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
@@ -179,14 +182,17 @@ if (empty($reshook))
             $rowidVoyage = $voyage->id;
             $rowidTag = GETPOST('tag','array');
 
-            if(!empty(GETPOST('tag','alpha')))
+
+            if(!empty($rowidTag))
             {
+
                 $voyage->deleteVoyageLink($rowidVoyage);
 
                 foreach ($rowidTag as $valueRowidTag){
                     $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
+
                 }
-            }
+            }else $voyage->deleteVoyageLink($rowidVoyage);
 
             if ($voyage->isextrafieldmanaged)
             {
@@ -200,7 +206,6 @@ if (empty($reshook))
                 $error++;
             }
 
-            $res= $voyage->save($user);
 
             //TARIF
 
@@ -209,8 +214,8 @@ if (empty($reshook))
             }
             elseif(empty($voyage->tarif) && (empty($rowidTag))){
                 $voyage->tarif = $conf->global->VOYAGE_TARIF;
-
             }
+            $res= $voyage->save($user);
 
             if($res < 0){
                 $error ++;
@@ -324,11 +329,11 @@ if ($action == 'create')
 
     // Common attributes
 
-	print '<tr><td class="fieldrequired">'.$langs->trans("Ref").'</td><td><input name="ref" class="minwidth300 maxwidth400onsmartphone" maxlength="255" value="'.dol_escape_htmltag(GETPOST('label', $label_security_check)).'"></td></tr>';
+	print '<tr><td class="fieldrequired ref">'.$langs->trans("Ref").'</td><td><input name="ref" class="minwidth300 maxwidth400onsmartphone" maxlength="255" value="'.dol_escape_htmltag(GETPOST('label', $label_security_check)).'"></td></tr>';
 
-	print '<tr><td >'.$langs->trans("Price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('tarif', $label_security_check)).'"></td> </tr>';
+	print '<tr><td class="price" >'.$langs->trans("Price").'</td> <td> <input name="tarif" class="" maxlength="255" value="'.dol_escape_htmltag(GETPOST('tarif', $label_security_check)).'"></td> </tr>';
 
-	print '<tr><td >'.$langs->trans("Country").'</td><td>';
+	print '<tr><td class="country">'.$langs->trans("Country").'</td><td>';
 
     print $form->select_country($voyage->pays, 'pays', '', 0, 'minwidth300 widthcentpercentminusx maxwidth500');
 
