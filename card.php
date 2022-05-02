@@ -148,11 +148,11 @@ if (empty($reshook))
 
 
                 $rowidVoyage = $voyage->id;
-                $rowidTag = GETPOST('tag','array');
+                $TRowidTags = GETPOST('tag','array');
 
-                if(!empty($rowidTag))
+                if(!empty($TRowidTags))
                 {
-                    foreach ($rowidTag as $valueRowidTag){
+                    foreach ($TRowidTags as $valueRowidTag){
                         $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
                     }
                 }else $voyage->deleteVoyageLink($rowidVoyage);
@@ -160,17 +160,19 @@ if (empty($reshook))
                 //TARIF
 
                 //IF TARIF EMPTY AND TAG EMPTY
-                if (empty($voyage->tarif) && !(empty($rowidTag))){
-                    $voyage->setTarif($rowidVoyage,$rowidTag);
+                if (empty($voyage->tarif) && !(empty($TRowidTags))){
+                    $voyage->setTarif($rowidVoyage,$TRowidTags);
                 }
+
                 // IF TARIF EMPTY AND TAG FILLED
-                elseif(empty($voyage->tarif) && (empty($rowidTag))){
+                elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                     $voyage->tarif = $conf->global->VOYAGE_TARIF;
                 }
                 $voyage->save($user);
 
                 if(!empty($idProduct)){
-                    $voyage->insertProductLinkVoyage($idProduct,$voyage->id);
+                    //$voyage->insertProductLinkVoyage($idProduct,$voyage->id);
+                    $voyage->add_object_linked('product', $idProduct);
                 }
 
                 header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
@@ -184,14 +186,14 @@ if (empty($reshook))
 
 
             $rowidVoyage = $voyage->id;
-            $rowidTag = GETPOST('tag','array');
+            $TRowidTags = GETPOST('tag','array');
 
 
-            if(!empty($rowidTag))
+            if(!empty($TRowidTags))
             {
                 $voyage->deleteVoyageLink($rowidVoyage);
 
-                foreach ($rowidTag as $valueRowidTag){
+                foreach ($TRowidTags as $valueRowidTag){
                     $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
                 }
             }else $voyage->deleteVoyageLink($rowidVoyage);
@@ -210,10 +212,10 @@ if (empty($reshook))
 
             //TARIF
 
-            if (empty($voyage->tarif) && !(empty($rowidTag))){
-                $voyage->setTarif($rowidVoyage,$rowidTag);
+            if (empty($voyage->tarif) && !(empty($TRowidTags))){
+                $voyage->setTarif($rowidVoyage,$TRowidTags);
             }
-            elseif(empty($voyage->tarif) && (empty($rowidTag))){
+            elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                 $voyage->tarif = $conf->global->VOYAGE_TARIF;
             }
             $res= $voyage->save($user);
