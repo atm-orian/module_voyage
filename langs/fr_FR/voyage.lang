@@ -23,6 +23,9 @@ TarifDefault = Tarif par défaut
 
 VoyageTag = Voyage- Catégorie voyage
 
+#EXTRAFIELDS
+SpecificMention = Mention Spécifique
+
 # MENU
 TopMenuvoyage=voyage
 LeftMenuvoyageCreate= Nouveau voyage

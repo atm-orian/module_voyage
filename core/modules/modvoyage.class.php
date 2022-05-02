@@ -91,6 +91,7 @@ class modvoyage extends DolibarrModules
 		$this->module_parts = array(
             'hooks' => array('productcard'),
             'triggers' => 1,
+            'models' => 1
         );
 
 		// Data directories to create when module is enabled.
@@ -371,7 +372,7 @@ class modvoyage extends DolibarrModules
 	public function init($options = '')
 	{
 		global $langs;
-		$sql = array();
+        $sql=array();
 
 		define('INC_FROM_DOLIBARR', true);
 
