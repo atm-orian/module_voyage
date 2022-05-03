@@ -416,7 +416,7 @@ class Voyage extends SeedObject
         $sql = 'DELETE FROM '. MAIN_DB_PREFIX. 'voyage_link';
         $sql .= ' WHERE fk_voyage='.$id;
         $resql = $db->query($sql);
-
+g
         if ($resql) return true;
 
         return false;
@@ -511,22 +511,6 @@ class Voyage extends SeedObject
 
         return false;
         
-    }
-
-    /**
-     * @param int $rowidProduct
-     * @param int $rowidVoyage
-     * @return bool
-     */
-    public function insertProductLinkVoyage($rowidProduct,$rowidVoyage){
-        global $db;
-        $sql = 'INSERT INTO ' . MAIN_DB_PREFIX.'element_element (fk_source, sourcetype, fk_target, targettype) VALUES (\''.$rowidProduct.'\',\'product\',\''.$rowidVoyage.'\',\'voyage\')';
-
-        $resql = $db->query($sql);
-
-        if ($resql) return true;
-
-        return false;
     }
 
     /**
