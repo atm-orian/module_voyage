@@ -251,6 +251,15 @@ class modvoyage extends DolibarrModules
 		$this->rights[$r][4] = 'delete';		    // In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$this->rights[$r][5] = '';				// In php code, permission will be checked by test if ($user->rights->permkey->level1->level2)
 		$r++;
+
+        $r++;
+        $this->rights[$r][0] = $this->numero . $r;
+        $this->rights[$r][1] = 'voyage';
+        $this->rights[$r][3] = 0;
+        $this->rights[$r][4] = 'voyage';
+        $this->rights[$r][5] = 'export';
+
+
 /**/
 
 		// Main menu entries
@@ -346,19 +355,22 @@ class modvoyage extends DolibarrModules
 		// Exports
 		$r=1;
 
-		// Example:
-		// $this->export_code[$r]=$this->rights_class.'_'.$r;
-		// $this->export_label[$r]='CustomersInvoicesAndInvoiceLines';	// Translation key (used only if key ExportDataset_xxx_z not found)
-        // $this->export_enabled[$r]='1';                               // Condition to show export in list (ie: '$user->id==3'). Set to 1 to always show when module is enabled.
-		// $this->export_permission[$r]=array(array("facture","facture","export"));
-		// $this->export_fields_array[$r]=array('s.rowid'=>"IdCompany",'s.nom'=>'CompanyName','s.address'=>'Address','s.zip'=>'Zip','s.town'=>'Town','s.fk_pays'=>'Country','s.phone'=>'Phone','s.siren'=>'ProfId1','s.siret'=>'ProfId2','s.ape'=>'ProfId3','s.idprof4'=>'ProfId4','s.code_compta'=>'CustomerAccountancyCode','s.code_compta_fournisseur'=>'SupplierAccountancyCode','f.rowid'=>"InvoiceId",'f.facnumber'=>"InvoiceRef",'f.datec'=>"InvoiceDateCreation",'f.datef'=>"DateInvoice",'f.total'=>"TotalHT",'f.total_ttc'=>"TotalTTC",'f.tva'=>"TotalVAT",'f.paye'=>"InvoicePaid",'f.fk_statut'=>'InvoiceStatus','f.note'=>"InvoiceNote",'fd.rowid'=>'LineId','fd.description'=>"LineDescription",'fd.price'=>"LineUnitPrice",'fd.tva_tx'=>"LineVATRate",'fd.qty'=>"LineQty",'fd.total_ht'=>"LineTotalHT",'fd.total_tva'=>"LineTotalTVA",'fd.total_ttc'=>"LineTotalTTC",'fd.date_start'=>"DateStart",'fd.date_end'=>"DateEnd",'fd.fk_product'=>'ProductId','p.ref'=>'ProductRef');
-		// $this->export_entities_array[$r]=array('s.rowid'=>"company",'s.nom'=>'company','s.address'=>'company','s.zip'=>'company','s.town'=>'company','s.fk_pays'=>'company','s.phone'=>'company','s.siren'=>'company','s.siret'=>'company','s.ape'=>'company','s.idprof4'=>'company','s.code_compta'=>'company','s.code_compta_fournisseur'=>'company','f.rowid'=>"invoice",'f.facnumber'=>"invoice",'f.datec'=>"invoice",'f.datef'=>"invoice",'f.total'=>"invoice",'f.total_ttc'=>"invoice",'f.tva'=>"invoice",'f.paye'=>"invoice",'f.fk_statut'=>'invoice','f.note'=>"invoice",'fd.rowid'=>'invoice_line','fd.description'=>"invoice_line",'fd.price'=>"invoice_line",'fd.total_ht'=>"invoice_line",'fd.total_tva'=>"invoice_line",'fd.total_ttc'=>"invoice_line",'fd.tva_tx'=>"invoice_line",'fd.qty'=>"invoice_line",'fd.date_start'=>"invoice_line",'fd.date_end'=>"invoice_line",'fd.fk_product'=>'product','p.ref'=>'product');
-		// $this->export_sql_start[$r]='SELECT DISTINCT ';
-		// $this->export_sql_end[$r]  =' FROM ('.MAIN_DB_PREFIX.'facture as f, '.MAIN_DB_PREFIX.'facturedet as fd, '.MAIN_DB_PREFIX.'societe as s)';
-		// $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'product as p on (fd.fk_product = p.rowid)';
-		// $this->export_sql_end[$r] .=' WHERE f.fk_soc = s.rowid AND f.rowid = fd.fk_facture';
-		// $this->export_sql_order[$r] .=' ORDER BY s.nom';
-		// $r++;
+//		 Example:
+		 $this->export_code[$r]=$this->rights_class.'_'.$r;
+		 $this->export_label[$r]='ExportListVoyage';	// Translation key (used only if key ExportDataset_xxx_z not found)
+         $this->export_enabled[$r]='1';                               // Condition to show export in list (ie: '$user->id==3'). Set to 1 to always show when module is enabled.
+		 $this->export_permission[$r]=array(array("facture","facture","export"));
+		 $this->export_fields_array[$r]=array('v.rowid'=>"IdVoyage",'v.reference'=>"Ref",'v.tarif'=>"Tarif",'c.label'=>"Pays",'v.date_deb'=>"Date Début", 'v.date_fin'=>"Date Fin", 'group_concat(vt.label)'=>"Tag");
+		 $this->export_entities_array[$r]=array('v.rowid'=>"Voyage",'v.reference'=>"Voyage",'v.tarif'=>"Voyage",'c.label'=>"Pays",'v.date_deb'=>"Voyage", 'v.date_fin'=>"Voyage", 'group_concat(vt.label)'=>"Catégorie");
+		 $this->export_sql_start[$r]=' SELECT DISTINCT ';
+		 $this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'voyage v';
+		 $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'voyage_link as vl ON (v.rowid = vl.fk_voyage)';
+         $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_voyage_tag as vt ON (vl.fk_tag = vt.rowid)';
+         $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c ON (c.rowid = v.pays)';
+//         var_dump($this->export_fields_array);exit;
+		 $this->export_sql_end[$r] .=' WHERE 1=1';
+		 $this->export_sql_order[$r] .=' GROUP BY v.rowid ORDER BY v.rowid';
+		 $r++;
 	}
 
 	/**
