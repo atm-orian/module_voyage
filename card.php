@@ -33,6 +33,7 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 dol_include_once('voyage/class/voyage.class.php');
 dol_include_once('voyage/lib/voyage.lib.php');
+include_once(DOL_DOCUMENT_ROOT.'/core/class/hookmanager.class.php');
 
 if(empty($user->rights->voyage->read)) accessforbidden();
 
@@ -43,6 +44,7 @@ $id = GETPOST('id', 'int');
 $ref = GETPOST('ref');
 $cancel = GETPOST('cancel', 'alpha');
 $ArrayLabel = Voyage::getStaticArrayTag();
+
 
 if($id){
     $ArrayLabelPreselected = Voyage::getStaticArrayPreselectedTag($id);
@@ -113,6 +115,8 @@ if (empty($reshook))
 	switch ($action) {
 		case 'add':
 
+            $idProduct = GETPOST('idProduct','int');
+
 			$voyage->reference 				= GETPOST('ref');
             if (empty($voyage->reference)) {
                 setEventMessages($langs->trans('EmptyRef'), array(), 'errors');
@@ -131,8 +135,6 @@ if (empty($reshook))
             }
 
 
-
-
 			$date_f = GETPOST('date_fin');
             if(!empty($date_f)){
                 $date_fConvert= DateTime::createFromFormat('d/m/Y',$date_f);
@@ -140,34 +142,38 @@ if (empty($reshook))
             }
 
 
+
             if (empty($error)){
                 $res = $voyage->save($user);
 
 
                 $rowidVoyage = $voyage->id;
-                $rowidTag = GETPOST('tag','array');
+                $TRowidTags = GETPOST('tag','array');
 
-                if(!empty($rowidTag))
+                if(!empty($TRowidTags))
                 {
-                    foreach ($rowidTag as $valueRowidTag){
+                    foreach ($TRowidTags as $valueRowidTag){
                         $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
                     }
                 }else $voyage->deleteVoyageLink($rowidVoyage);
 
-
                 //TARIF
 
                 //IF TARIF EMPTY AND TAG EMPTY
-                if (empty($voyage->tarif) && !(empty($rowidTag))){
-                    $voyage->setTarif($rowidVoyage,$rowidTag);
+                if (empty($voyage->tarif) && !(empty($TRowidTags))){
+                    $voyage->setTarif($rowidVoyage,$TRowidTags);
                 }
+
                 // IF TARIF EMPTY AND TAG FILLED
-                elseif(empty($voyage->tarif) && (empty($rowidTag))){
+                elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                     $voyage->tarif = $conf->global->VOYAGE_TARIF;
                 }
                 $voyage->save($user);
 
-
+                if(!empty($idProduct)){
+                    //$voyage->insertProductLinkVoyage($idProduct,$voyage->id);
+                    $voyage->add_object_linked('product', $idProduct);
+                }
 
                 header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$voyage->id);
                     exit;
@@ -180,17 +186,15 @@ if (empty($reshook))
 
 
             $rowidVoyage = $voyage->id;
-            $rowidTag = GETPOST('tag','array');
+            $TRowidTags = GETPOST('tag','array');
 
 
-            if(!empty($rowidTag))
+            if(!empty($TRowidTags))
             {
-
                 $voyage->deleteVoyageLink($rowidVoyage);
 
-                foreach ($rowidTag as $valueRowidTag){
+                foreach ($TRowidTags as $valueRowidTag){
                     $voyage->setLabelTag($rowidVoyage,$valueRowidTag);
-
                 }
             }else $voyage->deleteVoyageLink($rowidVoyage);
 
@@ -206,13 +210,12 @@ if (empty($reshook))
                 $error++;
             }
 
-
             //TARIF
 
-            if (empty($voyage->tarif) && !(empty($rowidTag))){
-                $voyage->setTarif($rowidVoyage,$rowidTag);
+            if (empty($voyage->tarif) && !(empty($TRowidTags))){
+                $voyage->setTarif($rowidVoyage,$TRowidTags);
             }
-            elseif(empty($voyage->tarif) && (empty($rowidTag))){
+            elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                 $voyage->tarif = $conf->global->VOYAGE_TARIF;
             }
             $res= $voyage->save($user);
@@ -315,10 +318,13 @@ llxHeader('', $title);
 
 if ($action == 'create')
 {
+    $idProduct = GETPOST('idProduct','int');
 
     print load_fiche_titre($langs->trans('Newvoyage'), '', 'voyage@voyage');
 
     print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
+
+    print '<input type="hidden" name="idProduct" value="'.$idProduct.'">';
     print '<input type="hidden" name="token" value="'.$_SESSION['newtoken'].'">';
     print '<input type="hidden" name="action" value="add">';
     print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';

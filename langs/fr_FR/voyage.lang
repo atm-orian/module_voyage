@@ -47,6 +47,7 @@ Novoyage=(vide)
 # CARD
 Newvoyage=Création voyage
 voyageCard=Fiche voyage
+CreateVoyage = Créer Voyage
 
 voyageModify=Modifier
 voyageClone=Cloner

@@ -317,7 +317,7 @@ class Voyage extends SeedObject
 		$object->fetch($id, false, $ref);
 
         if($object->fetch($id, false, $ref) <= 0){
-            dol_print_error($db);
+            dol_print_error();
             exit;
         }
 
@@ -325,7 +325,7 @@ class Voyage extends SeedObject
     }
 
     /**
-     * @return array|int
+     * @return array|void
      */
     public static function getStaticArrayTag()
     {
@@ -334,19 +334,20 @@ class Voyage extends SeedObject
         $sql = 'SELECT vt.label, vt.rowid FROM ' . MAIN_DB_PREFIX.'c_voyage_tag vt';
         $resql = $db->query($sql);
 
-        if($resql){
-            while($obj = $db->fetch_object($resql)){
-                $ArrayLabel[$obj->rowid] = $obj->label;
-            }
-            return $ArrayLabel;
+        if(!$resql){
+            dol_print_error($db);
+            exit;
         }
-        else return -1;
 
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabel[$obj->rowid] = $obj->label;
+        }
+            return $ArrayLabel;
     }
 
     /**
      * @param int $id
-     * @return array|int
+     * @return array|void
      */
     public static function getStaticArrayPreselectedTag($id)
     {
@@ -356,13 +357,15 @@ class Voyage extends SeedObject
         $sql .= ' WHERE vl.fk_voyage='.$id;
         $resql = $db->query($sql);
 
-        if($resql){
-            while($obj = $db->fetch_object($resql)){
-                $ArrayLabel[] = $obj->rowid;
-            }
-            return $ArrayLabel;
+        if(!$resql){
+            dol_print_error($db);
+            exit;
         }
-        else return -1;
+
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabel[] = $obj->rowid;
+        }
+            return $ArrayLabel;
     }
 
     /**
@@ -386,7 +389,7 @@ class Voyage extends SeedObject
 
     /**
      * @param int $id
-     * @return array|int
+     * @return array|void
      */
     public function getValueRowidTag($id)
     {
@@ -397,13 +400,16 @@ class Voyage extends SeedObject
         $sql .= ' WHERE vl.fk_voyage='.$id;
         $resql = $db->query($sql);
 
-        if($resql){
-            while($obj = $db->fetch_object($resql)){
-                $ArrayLabelTag[$obj->rowid] = $obj->label;
-            }
-            return $ArrayLabelTag;
+        if(!$resql){
+            dol_print_error($db);
+            exit;
         }
-        else return -1;
+
+        while($obj = $db->fetch_object($resql)){
+            $ArrayLabelTag[$obj->rowid] = $obj->label;
+        }
+
+        return $ArrayLabelTag;
     }
 
     /**
@@ -416,7 +422,7 @@ class Voyage extends SeedObject
         $sql = 'DELETE FROM '. MAIN_DB_PREFIX. 'voyage_link';
         $sql .= ' WHERE fk_voyage='.$id;
         $resql = $db->query($sql);
-g
+
         if ($resql) return true;
 
         return false;
@@ -424,59 +430,45 @@ g
     }
 
     /**
-     *  Cette fonction permet de mettre un tarif par défault à un voyage en fonction des catégories qui lui sont associés
-     * Si il n'y a qu'une seule catégorie alors le tarif sera celui qui lui est associé
-     * si il il y a plusieurs catégories alors le tarif sera le tarif le plus petit parmi toutes les catégories associées
      * @param int $rowidVoyage
-     * @param array $TRowidTags
-     * @return int
+     * @param array $rowidTag
+     * @return void
      */
-    public function setTarif($rowidVoyage,$TRowidTags)
+    public function setTarif($rowidVoyage,$rowidTag)
     {
         $i =0;
         global $db;
         $object = new voyage($db);
 
-        if(!empty($TRowidTags))
-        {
-            if (count($TRowidTags) == 1) // IF THERE IS ONLY ONE TAG
-            {
-                $tarift = $object->findTarifWithOneTag($TRowidTags[0]);
-                $testSTDOP = $object->setTarifDependsOneTag($rowidVoyage,$tarift);
-                if ($testSTDOP){
-                    return 1;
-                }
-                else return -1;
+            foreach($rowidTag as $row){
+                $i++;
+            }
+            if ($i==1){ // IF THERE IS ONLY ONE TAG
+                $tarift = $object->findTarifWithOneTag($rowidTag[0]);
+
+                $object->setTarifDependsOneTag($rowidVoyage,$tarift);
             }
 
-            else // IF THERE ARE FEW TAGS
-                {
-                    $tarift = $object->findTarifWithOneTag($TRowidTags[0]);
+            else { // IF THERE ARE FEW TAGS
+                $tarift = $object->findTarifWithOneTag($rowidTag[0]);
+                $i = 0;
 
-                    foreach($TRowidTags as $row)
+                foreach($rowidTag as $row){
+
+                    if ($tarift > $object->findTarifWithOneTag($row))
                     {
-                        if ($tarift > $object->findTarifWithOneTag($row))
-                        {
-                            $tarift = $object->findTarifWithOneTag($row);
-                        }
+                        $tarift = $object->findTarifWithOneTag($row);
                     }
                 }
+                $object->setTarifDependsOneTag($rowidVoyage,$tarift);
 
-                $testSTDOP = $object->setTarifDependsOneTag($rowidVoyage,$tarift);
-                if ($testSTDOP){
-                    return 1;
-                }
-                else return -1;
             }
-        else return -1;
 
     }
 
-
     /**
-     * Cette fonction permet de trouver le tarif associé à une catégorie
      * @param int $valueRowidTag
-     * @return double
+     * @return void
      */
     public function findTarifWithOneTag($valueRowidTag)
     {
@@ -485,17 +477,17 @@ g
         $sql .= ' WHERE vt.rowid='.$valueRowidTag;
         $resql = $db->query($sql);
 
-        if($resql){
-            $obj = $db->fetch_object($resql);
-            return $obj->tarift;
+        if(!$resql){
+            dol_print_error($db);
+            exit;
         }
-        else return -1;
+
+        $obj = $db->fetch_object($resql);
+            return $obj->tarift;
 
     }
 
     /**
-     * Cette fonction permet d'enregistrer un tarif sur un voyage souhaité
-     * dans notre cas le tarif sera celui associé à un tag recherché, ce tarif sera récupéré via la fonction findTarifWithOneTag()
      * @param int $rowidVoyage
      * @param double $tarift
      * @return bool
@@ -514,14 +506,36 @@ g
     }
 
     /**
-     * @param int $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto
-     * @return string
+     * @param int $rowidVoyage
+     * @return void
      */
+    public function getOneTagCurrentVoyage($rowidVoyage){
+        //SELECT the tag of the current voyage
+        //After insert tarif depends on tag
 
+        global $db;
+        $sql = 'SELECT vt.label FROM '. MAIN_DB_PREFIX.'c_voyage_tag vt';
+        $sql .= ' LEFT JOIN '.MAIN_DB_PREFIX.'voyage_link vl ON (vl.fk_tag = vt.rowid)';
+        $sql .= ' WHERE vl.fk_voyage='.$rowidVoyage;
+        $resql = $db->query($sql);
+
+        if(!$resql){
+            dol_print_error($db);
+            exit;
+        }
+
+        $obj = $db->fetch_object($resql);
+            return $obj->label;
+    }
+
+
+<<<<<<< HEAD
     public function getLibStatut($mode = 0)
     {
 //       return self::LibStatut($this->status, $mode);
     }
+=======
+>>>>>>> 2ef63425e6b48cf9fedc39d8966a2af0729573c9
 }
 
 
