@@ -67,7 +67,7 @@ class modvoyage extends DolibarrModules
 		// Name of image file used for this module.
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png, use this->picto='pictovalue'
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
-		$this->picto='voyage@voyage';
+		$this->picto='voyage_resized@voyage';
 
 		// Defined all module parts (triggers, login, substitutions, menus, css, etc...)
 		// for default path (eg: /voyage/core/xxxxx) (0=disable, 1=enable)
@@ -356,10 +356,13 @@ class modvoyage extends DolibarrModules
 		$r=1;
 
 //		 Example:
+
+
 		 $this->export_code[$r]=$this->rights_class.'_'.$r;
+         $this->export_icon[$r] = $this->picto;
 		 $this->export_label[$r]='ExportListVoyage';	// Translation key (used only if key ExportDataset_xxx_z not found)
          $this->export_enabled[$r]='1';                               // Condition to show export in list (ie: '$user->id==3'). Set to 1 to always show when module is enabled.
-		 $this->export_permission[$r]=array(array("facture","facture","export"));
+		 $this->export_permission[$r]=array(array("voyage","voyage","export"));
 		 $this->export_fields_array[$r]=array('v.rowid'=>"IdVoyage",'v.reference'=>"Ref",'v.tarif'=>"Tarif",'c.label'=>"Pays",'v.date_deb'=>"Date Début", 'v.date_fin'=>"Date Fin", 'group_concat(vt.label)'=>"Tag");
 		 $this->export_entities_array[$r]=array('v.rowid'=>"Voyage",'v.reference'=>"Voyage",'v.tarif'=>"Voyage",'c.label'=>"Pays",'v.date_deb'=>"Voyage", 'v.date_fin'=>"Voyage", 'group_concat(vt.label)'=>"Catégorie");
 		 $this->export_sql_start[$r]=' SELECT DISTINCT ';
@@ -367,10 +370,21 @@ class modvoyage extends DolibarrModules
 		 $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'voyage_link as vl ON (v.rowid = vl.fk_voyage)';
          $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_voyage_tag as vt ON (vl.fk_tag = vt.rowid)';
          $this->export_sql_end[$r] .=' LEFT JOIN '.MAIN_DB_PREFIX.'c_country as c ON (c.rowid = v.pays)';
-//         var_dump($this->export_fields_array);exit;
-		 $this->export_sql_end[$r] .=' WHERE 1=1';
-		 $this->export_sql_order[$r] .=' GROUP BY v.rowid ORDER BY v.rowid';
-		 $r++;
+		 $this->export_sql_end[$r] .=' WHERE 1=1 ';
+         $this->export_sql_order[$r] .=' GROUP BY v.rowid ORDER BY v.rowid';
+
+        $this->export_TypeFields_array[$r] = array(
+            'v.rowid'=>"Numeric",
+            'v.reference'=>"Text",
+            'v.tarif'=>"Numeric",
+            'c.label'=>"Text",
+            'v.date_deb'=>"Date",
+            'v.date_fin'=>"Date"
+        );
+
+
+
+         $r++;
 	}
 
 	/**
