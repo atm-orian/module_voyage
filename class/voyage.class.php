@@ -416,7 +416,7 @@ class Voyage extends SeedObject
         $sql = 'DELETE FROM '. MAIN_DB_PREFIX. 'voyage_link';
         $sql .= ' WHERE fk_voyage='.$id;
         $resql = $db->query($sql);
-g
+
         if ($resql) return true;
 
         return false;
