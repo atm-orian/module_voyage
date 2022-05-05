@@ -357,6 +357,7 @@ class Voyage extends SeedObject
         $resql = $db->query($sql);
 
         if($resql){
+            $ArrayLabel = [];
             while($obj = $db->fetch_object($resql)){
                 $ArrayLabel[] = $obj->rowid;
             }

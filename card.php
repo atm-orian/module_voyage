@@ -271,8 +271,14 @@ if (empty($reshook))
             }
             break;
 		case 'confirm_clone':
+//            var_dump($object->id);exit;
+            $TTag = Voyage::getStaticArrayPreselectedTag($object->id);
 			$object->cloneObject($user);
+            foreach($TTag as $valueRowidTag){
+                $object->setLabelTag($object->id, $valueRowidTag);
+            }
 
+            setEventMessage($langs->trans('EmptyRef')); // TODO: à modifier
 			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
 			exit;
 
@@ -553,9 +559,17 @@ else
                 {
                     print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageDelete").'</a></div>'."\n";
                 }
-				if ($user->rights->societe->creer) {
-					print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit">'.$langs->trans("Modify").'</a>'."\n";
+				if ($user->rights->voyage->write) {
+					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit">'.$langs->trans("Modify").'</a></div>'."\n";
 				}
+                if ($user->rights->voyage->clone) {
+                    //print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
+                    print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a>';
+                    //print '<span id="action-clone" class="butAction">'.$langs->trans('ToClone').'</span>'."\n";
+
+
+                }
+
             }
             print '</div>'."\n";
 
