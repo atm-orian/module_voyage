@@ -167,8 +167,9 @@ if (empty($reshook))
                 // IF TARIF EMPTY AND TAG FILLED
                 elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                     $voyage->tarif = $conf->global->VOYAGE_TARIF;
+                    $voyage->save($user);   // Les fonctions ci-dessus n'ont pas besoin d'un save pour insérer des données
                 }
-                $voyage->save($user);
+//                $voyage->save($user);
 
                 if(!empty($idProduct)){
                     //$voyage->insertProductLinkVoyage($idProduct,$voyage->id);
