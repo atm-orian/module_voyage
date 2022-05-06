@@ -72,8 +72,14 @@ Tag=Catégorie(s)
 EmptyRef= Champ ref vide
 PriceError = Tarif invalide
 
+# EVENT
+CloneSucces = Clone réussi
+ConfirmClonevoyageTitle = Confirmation Clone
+
 ConfirmValidatevoyageTitle=Confirmation d'activation
 ConfirmValidatevoyageBody=Souhaitez-vous vraiment activer cette fiche voyage %s ?
 
 ConfirmDeletevoyageTitle=Confirmation de suppression
 ConfirmDeletevoyageBody=Souhaitez-vous vraiment supprimer cette fiche voyage %s ?
+
+ConfirmClonevoyageBody = Souhaitez-vous vraiment cloner cette fiche voyage %s ?

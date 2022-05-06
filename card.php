@@ -159,17 +159,17 @@ if (empty($reshook))
 
                 //TARIF
 
-                //IF TARIF EMPTY AND TAG EMPTY
+                //IF TARIF EMPTY AND TAG FILLED
                 if (empty($voyage->tarif) && !(empty($TRowidTags))){
                     $voyage->setTarif($rowidVoyage,$TRowidTags);
                 }
 
-                // IF TARIF EMPTY AND TAG FILLED
+                // IF TARIF EMPTY AND TAG EMPTY
                 elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                     $voyage->tarif = $conf->global->VOYAGE_TARIF;
-                    $voyage->save($user);   // Les fonctions ci-dessus n'ont pas besoin d'un save pour insérer des données
+                    $voyage->save($user);
                 }
-//                $voyage->save($user);
+                else $voyage->save($user);
 
                 if(!empty($idProduct)){
                     //$voyage->insertProductLinkVoyage($idProduct,$voyage->id);
@@ -213,13 +213,17 @@ if (empty($reshook))
 
             //TARIF
 
+            //IF TARIF EMPTY AND TAG FILLED
             if (empty($voyage->tarif) && !(empty($TRowidTags))){
                 $voyage->setTarif($rowidVoyage,$TRowidTags);
             }
+
+            // IF TARIF EMPTY AND TAG EMPTY
             elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                 $voyage->tarif = $conf->global->VOYAGE_TARIF;
+                $voyage->save($user);
             }
-            $res= $voyage->save($user);
+            else $voyage->save($user);
 
             if($res < 0){
                 $error ++;
@@ -272,14 +276,13 @@ if (empty($reshook))
             }
             break;
 		case 'confirm_clone':
-//            var_dump($object->id);exit;
             $TTag = Voyage::getStaticArrayPreselectedTag($object->id);
 			$object->cloneObject($user);
             foreach($TTag as $valueRowidTag){
                 $object->setLabelTag($object->id, $valueRowidTag);
             }
 
-            setEventMessage($langs->trans('EmptyRef')); // TODO: à modifier
+            setEventMessage($langs->trans('CloneSucces')); // TODO: à modifier
 			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
 			exit;
 
@@ -564,10 +567,7 @@ else
 					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit">'.$langs->trans("Modify").'</a></div>'."\n";
 				}
                 if ($user->rights->voyage->clone) {
-                    //print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
-                    print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a>';
-                    //print '<span id="action-clone" class="butAction">'.$langs->trans('ToClone').'</span>'."\n";
-
+                    print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
 
                 }
 

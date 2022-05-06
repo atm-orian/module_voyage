@@ -261,7 +261,7 @@ class modvoyage extends DolibarrModules
 
         $r++;
         $this->rights[$r][0] = $this->numero . $r;
-        $this->rights[$r][1] = 'voyage';
+        $this->rights[$r][1] = 'clone';
         $this->rights[$r][3] = 0;
         $this->rights[$r][4] = 'clone';
         $this->rights[$r][5] = '';
