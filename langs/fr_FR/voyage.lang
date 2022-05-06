@@ -75,6 +75,7 @@ PriceError = Tarif invalide
 # EVENT
 CloneSucces = Clone réussi
 ConfirmClonevoyageTitle = Confirmation Clone
+CloneNotAllowed = Clone non permis
 
 ConfirmValidatevoyageTitle=Confirmation d'activation
 ConfirmValidatevoyageBody=Souhaitez-vous vraiment activer cette fiche voyage %s ?

@@ -276,14 +276,23 @@ if (empty($reshook))
             }
             break;
 		case 'confirm_clone':
-            $TTag = Voyage::getStaticArrayPreselectedTag($object->id);
-			$object->cloneObject($user);
-            foreach($TTag as $valueRowidTag){
-                $object->setLabelTag($object->id, $valueRowidTag);
+            if($user->rights->voyage->clone)
+            {
+                $TTag = Voyage::getStaticArrayPreselectedTag($object->id);
+                $object->cloneObject($user);
+                foreach($TTag as $valueRowidTag)
+                {
+                    $object->setLabelTag($object->id, $valueRowidTag);
+                }
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
+                setEventMessage($langs->trans('CloneSucces'));
             }
 
-            setEventMessage($langs->trans('CloneSucces')); // TODO: à modifier
-			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
+            else {
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
+                setEventMessages($langs->trans('CloneNotAllowed'), array(), 'errors');
+            }
+
 			exit;
 
 		case 'modif':
@@ -568,7 +577,6 @@ else
 				}
                 if ($user->rights->voyage->clone) {
                     print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
-
                 }
 
             }
