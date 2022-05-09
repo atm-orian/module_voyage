@@ -278,12 +278,9 @@ if (empty($reshook))
 		case 'confirm_clone':
             if($user->rights->voyage->clone)
             {
-                $TTag = Voyage::getStaticArrayPreselectedTag($object->id);
-                $object->cloneObject($user);
-                foreach($TTag as $valueRowidTag)
-                {
-                    $object->setLabelTag($object->id, $valueRowidTag);
-                }
+
+                $object->clone($object->id,$user);
+
                 header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
                 setEventMessage($langs->trans('CloneSucces'));
             }
