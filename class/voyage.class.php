@@ -324,7 +324,7 @@ class Voyage extends SeedObject
 		return $object->getNomUrl($withpicto, $moreparams);
     }
 
-    /**
+    /** retourne dans un tableau tous les tags de la base
      * @return array|int
      */
     public static function getStaticArrayTag()
@@ -344,7 +344,7 @@ class Voyage extends SeedObject
 
     }
 
-    /**
+    /** retourne dans un tableau tous les tags associés à un voyage
      * @param int $id
      * @return array|int
      */
@@ -357,6 +357,7 @@ class Voyage extends SeedObject
         $resql = $db->query($sql);
 
         if($resql){
+            $ArrayLabel = [];
             while($obj = $db->fetch_object($resql)){
                 $ArrayLabel[] = $obj->rowid;
             }
@@ -365,7 +366,7 @@ class Voyage extends SeedObject
         else return -1;
     }
 
-    /**
+    /** Lie un seul tag à un voyage
      * @param int $rowidVoyage
      * @param int $valueRowidTag
      * @return bool
@@ -384,7 +385,7 @@ class Voyage extends SeedObject
 
     }
 
-    /**
+    /** retourne un tableau de tous les tags associés à un voyage
      * @param int $id
      * @return array|int
      */
@@ -406,7 +407,7 @@ class Voyage extends SeedObject
         else return -1;
     }
 
-    /**
+    /** supprime le ou les liens d'un voyage avec un tag
      * @param int $id
      * @return bool
      */
@@ -512,6 +513,32 @@ class Voyage extends SeedObject
         return false;
         
     }
+
+    /** clone un voyage à partir de l'id du voyage source
+     * @param $idVoyage
+     * @param $user
+     * @param $ref
+     * @return void
+     */
+    public function clone($idVoyage,$user, $ref = null){
+        global $db;
+        $object = new voyage($db);
+        $TTag = Voyage::getStaticArrayPreselectedTag($idVoyage);
+
+        $idClone = $this->cloneObject($user);
+        $object->fetch($idClone, false, $ref);
+
+        if($object->fetch($idClone, false, $ref) <= 0){
+            dol_print_error($db);
+            exit;
+        }
+
+        foreach($TTag as $valueRowidTag)
+        {
+            $object->setLabelTag($idClone, $valueRowidTag);
+        }
+    }
+
 
     /**
      * @param int $mode     0=Long label, 1=Short label, 2=Picto + Short label, 3=Picto, 4=Picto + Long label, 5=Short label + Picto, 6=Long label + Picto

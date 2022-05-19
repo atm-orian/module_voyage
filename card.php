@@ -159,16 +159,17 @@ if (empty($reshook))
 
                 //TARIF
 
-                //IF TARIF EMPTY AND TAG EMPTY
+                //IF TARIF EMPTY AND TAG FILLED
                 if (empty($voyage->tarif) && !(empty($TRowidTags))){
                     $voyage->setTarif($rowidVoyage,$TRowidTags);
                 }
 
-                // IF TARIF EMPTY AND TAG FILLED
+                // IF TARIF EMPTY AND TAG EMPTY
                 elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                     $voyage->tarif = $conf->global->VOYAGE_TARIF;
+                    $voyage->save($user);
                 }
-                $voyage->save($user);
+                else $voyage->save($user);
 
                 if(!empty($idProduct)){
                     //$voyage->insertProductLinkVoyage($idProduct,$voyage->id);
@@ -212,13 +213,17 @@ if (empty($reshook))
 
             //TARIF
 
+            //IF TARIF EMPTY AND TAG FILLED
             if (empty($voyage->tarif) && !(empty($TRowidTags))){
                 $voyage->setTarif($rowidVoyage,$TRowidTags);
             }
+
+            // IF TARIF EMPTY AND TAG EMPTY
             elseif(empty($voyage->tarif) && (empty($TRowidTags))){
                 $voyage->tarif = $conf->global->VOYAGE_TARIF;
+                $voyage->save($user);
             }
-            $res= $voyage->save($user);
+            else $voyage->save($user);
 
             if($res < 0){
                 $error ++;
@@ -271,9 +276,20 @@ if (empty($reshook))
             }
             break;
 		case 'confirm_clone':
-			$object->cloneObject($user);
+            if($user->rights->voyage->clone)
+            {
 
-			header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
+                $object->clone($object->id,$user);
+
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
+                setEventMessage($langs->trans('CloneSucces'));
+            }
+
+            else {
+                header('Location: '.dol_buildpath('/voyage/card.php', 1).'?id='.$object->id);
+                setEventMessages($langs->trans('CloneNotAllowed'), array(), 'errors');
+            }
+
 			exit;
 
 		case 'modif':
@@ -553,9 +569,13 @@ else
                 {
                     print '<div class="inline-block divButAction"><a class="butActionRefused" href="#" title="'.dol_escape_htmltag($langs->trans("NotEnoughPermissions")).'">'.$langs->trans("voyageDelete").'</a></div>'."\n";
                 }
-				if ($user->rights->societe->creer) {
-					print '<a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit">'.$langs->trans("Modify").'</a>'."\n";
+				if ($user->rights->voyage->write) {
+					print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&action=edit">'.$langs->trans("Modify").'</a></div>'."\n";
 				}
+                if ($user->rights->voyage->clone) {
+                    print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=clone">'.$langs->trans("voyageClone").'</a></div>'."\n";
+                }
+
             }
             print '</div>'."\n";
 
